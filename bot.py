@@ -1,47 +1,44 @@
 import discord
+import asyncio
+import datetime
 from discord.ext import commands
 from discord import Embed
-import cmd_unban
-import cmd_ban
+from pathlib import Path
 import config
 import globalmods
+import sys, traceback
 
-client = discord.Client()
+bot = commands.Bot(command_prefix=config.prefix, description='I ban people who deserves so...')
 
+startup_extensions = ["thecog"]
 
-commands = {
-    "ban": cmd_ban,
-    "unban": cmd_unban,
-}
-
-
-@client.event
+@bot.event
 async def on_ready():
     print("Bot logged in sucessfully.")
-    for s in client.guilds:
+    for s in bot.guilds:
         print(" - %s (%s)" % (s.name, s.id))
-    await client.change_presence(game=discord.Game(name="with the banhammer"))
+    await bot.change_presence(game=discord.Game(name="with the banhammer"))
 
 
-@client.event
-async def on_message(message):
+@bot.event
+async def on_message(message:discord.Message):
     if message.author.bot:
         return
+    ctx:commands.Context = await bot.get_context(message)
     if message.content.startswith(config.prefix):
         if message.author.id in globalmods.mods:
-            invoke = message.content[len(config.prefix):].split(" ")[0]
-            args = message.content.split(" ")[1:]
-            moderatorname = message.author.name
-            modetatoravatar = message.author.avatar_url
-            print("INVOKE: %s\nARGS: %s" % (invoke, args.__str__()[1:-1].replace("'", "")))
-            if commands.__contains__(invoke):
-                await commands.get(invoke).ex(args, message, client, invoke, moderatorname, modetatoravatar)
-            else:
-                await client.send_message(message.channel, embed=Embed(color=discord.Color.red(), description="The command `%s` is not a valid command!" % invoke))
+            if ctx.command is not None:
+                await bot.invoke(ctx)
         else:
-            await client.send_message(message.channel, embed=Embed(color=discord.Color.red(), description="You are not a global moderator! Shame!"))
+            await ctx.send(embed=Embed(color=discord.Color.red(), description="You are not a Global Moderator! Shame!"))
     else:
         return
 
+if __name__ == '__main__':
+    for extension in startup_extensions:
+        try:
+            bot.load_extension(f"cogs.{extension}")
+        except Exception as e:
+            print(f"Failed to load extention {extension}.", e)
 
-client.run(config.token)
+bot.run(config.token)
