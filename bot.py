@@ -15,10 +15,44 @@ startup_extensions = ["thecog"]
 @bot.event
 async def on_ready():
     print("Bot logged in sucessfully.")
+    channel = bot.get_channel(config.botlog)
+    await channel.send("Bot startup done.")
     for s in bot.guilds:
         print(" - %s (%s)" % (s.name, s.id))
+    print("\n")
     await bot.change_presence(game=discord.Game(name="with the banhammer"))
 
+@bot.event
+async def on_command_error(ctx: commands.Context, error):
+    if isinstance(error, commands.NoPrivateMessage):
+        await ctx.send("This command cannot be used in private messages")
+    elif isinstance(error, commands.BotMissingPermissions):
+        return
+    elif isinstance(error, commands.MissingPermissions):
+        await ctx.send(embed=Embed(color=discord.Color.red(), description="You are missing the permission `Ban Members`!"))
+    elif isinstance(error, commands.CheckFailure):
+        return
+    elif isinstance(error, commands.CommandOnCooldown):
+        return
+    elif isinstance(error, commands.MissingRequiredArgument):
+        return
+    elif isinstance(error, commands.BadArgument):
+        return
+    elif isinstance(error, commands.CommandNotFound):
+        return
+    else:
+        await ctx.send("Something went wrong while executing that command... Sorry!")
+
+@bot.event
+async def on_guild_join(guild):
+    channel = bot.get_channel(config.botlog)
+    await channel.send("Joined a new guild (`%s` - `%s`)" % (guild.name, guild.id))
+    await channel.send("Syncing bans...")
+    banguild = bot.get_guild(config.banlistguild)
+    ban_list = await banguild.bans()
+    for BanEntry in ban_list:
+        await guild.ban(BanEntry.user, reason=f"WatchDog - Global Ban")
+    await channel.send("Synced bans!")
 
 @bot.event
 async def on_message(message:discord.Message):
@@ -26,11 +60,8 @@ async def on_message(message:discord.Message):
         return
     ctx:commands.Context = await bot.get_context(message)
     if message.content.startswith(config.prefix):
-        if message.author.id in globalmods.mods:
-            if ctx.command is not None:
-                await bot.invoke(ctx)
-        else:
-            await ctx.send(embed=Embed(color=discord.Color.red(), description="You are not a Global Moderator! Shame!"))
+        if ctx.command is not None:
+            await bot.invoke(ctx)
     else:
         return
 
