@@ -14,11 +14,12 @@ startup_extensions = ["thecog"]
 
 @bot.event
 async def on_ready():
-    print("Bot logged in sucessfully.")
+    print("[Info] Bot startup done.")
     channel = bot.get_channel(config.botlog)
-    await channel.send("Bot startup done.")
+    await channel.send("**[Info]** Bot startup done.")
     for s in bot.guilds:
         print(" - %s (%s)" % (s.name, s.id))
+        await channel.send(" - `%s` (`%s`)" % (s.name, s.id))
     print("\n")
     await bot.change_presence(game=discord.Game(name="with the banhammer"))
 
@@ -46,13 +47,16 @@ async def on_command_error(ctx: commands.Context, error):
 @bot.event
 async def on_guild_join(guild):
     channel = bot.get_channel(config.botlog)
-    await channel.send("Joined a new guild (`%s` - `%s`)" % (guild.name, guild.id))
-    await channel.send("Syncing bans...")
+    print("[Info] Joined a new guild (`%s` - `%s`)" % (guild.name, guild.id))
+    await channel.send("**[Info]** Joined a new guild (`%s` - `%s`)" % (guild.name, guild.id))
+    print("[Info] Syncing bans...")
+    await channel.send("**[Info]** Syncing bans...")
     banguild = bot.get_guild(config.banlistguild)
     ban_list = await banguild.bans()
     for BanEntry in ban_list:
         await guild.ban(BanEntry.user, reason=f"WatchDog - Global Ban")
-    await channel.send("Synced bans!")
+    print("**[Info]** Synced bans!")
+    await channel.send("**[Info]** Synced bans!")
 
 @bot.event
 async def on_message(message:discord.Message):
@@ -61,6 +65,9 @@ async def on_message(message:discord.Message):
     ctx:commands.Context = await bot.get_context(message)
     if message.content.startswith(config.prefix):
         if ctx.command is not None:
+            print("[Command] %s (%s) just used the %s command in the guild %s (%s)" % (ctx.author.name, ctx.author.id, ctx.invoked_with, ctx.guild.name, ctx.guild.id))
+            channel = bot.get_channel(config.botlog)
+            await channel.send("**[Command]** `%s` (`%s`) just used the `%s` command in the guild `%s` (`%s`)" % (ctx.author.name, ctx.author.id, ctx.invoked_with, ctx.guild.name, ctx.guild.id))
             await bot.invoke(ctx)
     else:
         return
@@ -70,6 +77,6 @@ if __name__ == '__main__':
         try:
             bot.load_extension(f"cogs.{extension}")
         except Exception as e:
-            print(f"Failed to load extention {extension}.", e)
+            print(f"[ERROR] Failed to load extention {extension}.", e)
 
 bot.run(config.token)
