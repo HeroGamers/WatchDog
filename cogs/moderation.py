@@ -25,6 +25,25 @@ class Moderation:
             await ctx.send(embed=embed)
 
         @bot.command()
+        @commands.guild_only()
+        @commands.bot_has_permissions(ban_members=True)
+        async def revsync(ctx):
+            """Sync bans from server to central."""
+            ban_list = await ctx.guild.bans()
+            mods = list(map(int, os.getenv("mods").split()))
+            if ctx.author.id in mods:
+                for guild in bot.guilds:
+                    for BanEntry in ban_list:
+                        await guild.ban(BanEntry.user, reason=f"WatchDog - Global Ban")
+                embed = discord.Embed(title="Revsync complete", color=discord.Color.green(),
+                    description="Reverse synchronisation complete! 👌")
+                embed.set_footer(text=ctx.author.name, icon_url=ctx.author.avatar_url)
+                embed.set_image(url="https://cdn.discordapp.com/attachments/485619099481800714/485917795679338496/1521567278_980x.gif")
+                await ctx.send(embed=embed)
+            else:
+                await ctx.send(embed=Embed(color=discord.Color.red(), description="You are not a Global Moderator! Shame!"))
+
+        @bot.command()
         async def listbans(ctx):
             """Get all the bans in List form."""
             mods = list(map(int, os.getenv("mods").split()))
