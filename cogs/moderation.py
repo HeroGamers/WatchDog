@@ -62,7 +62,7 @@ class Moderation:
                 user = await ctx.bot.get_user_info(user_id)
                 if user == ctx.bot.user:
                     await ctx.send(embed=Embed(color=discord.Color.red(), description="What are you trying to do? Shame!"))
-                elif user in mods:
+                elif user.id in mods:
                     await ctx.send(embed=Embed(color=discord.Color.red(), description="You cannot ban a Global Moderator, sorry!"))
                 else:
                     embed = discord.Embed(title="Account banned", color=discord.Color.green(),
