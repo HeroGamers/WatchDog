@@ -21,7 +21,7 @@ class Moderation:
             embed = discord.Embed(title="Sync complete", color=discord.Color.green(),
                 description="Synchronisation complete! 👌")
             embed.set_footer(text=ctx.author.name, icon_url=ctx.author.avatar_url)
-            embed.set_image(url="https://media0.giphy.com/media/h8UyZ6FiT0ptC/giphy.gif")
+            embed.set_image(url="https://cdn.discordapp.com/attachments/456229881064325131/485934104156569600/happysuccess.gif")
             await ctx.send(embed=embed)
 
         @bot.command()
