@@ -10,19 +10,21 @@ class Moderation:
         
         @bot.command()
         @commands.guild_only()
-        @commands.bot_has_permissions(ban_members=True)
         @commands.has_permissions(ban_members=True) 
         async def sync(ctx):
             """Sync the bans."""
-            banguild = bot.get_guild(int(os.getenv('banlistguild')))
-            ban_list = await banguild.bans()
-            for BanEntry in ban_list:
-                await ctx.guild.ban(BanEntry.user, reason=f"WatchDog - Global Ban")
-            embed = discord.Embed(title="Sync complete", color=discord.Color.green(),
-                description="Synchronisation complete! 👌")
-            embed.set_footer(text=ctx.author.name, icon_url=ctx.author.avatar_url)
-            embed.set_image(url="https://media0.giphy.com/media/h8UyZ6FiT0ptC/giphy.gif")
-            await ctx.send(embed=embed)
+            if bot.has_permissions(ban_members=True):
+                banguild = bot.get_guild(int(os.getenv('banlistguild')))
+                ban_list = await banguild.bans()
+                for BanEntry in ban_list:
+                    await ctx.guild.ban(BanEntry.user, reason=f"WatchDog - Global Ban")
+                embed = discord.Embed(title="Sync complete", color=discord.Color.green(),
+                    description="Synchronisation complete! 👌")
+                embed.set_footer(text=ctx.author.name, icon_url=ctx.author.avatar_url)
+                embed.set_image(url="https://media0.giphy.com/media/h8UyZ6FiT0ptC/giphy.gif")
+                await ctx.send(embed=embed)
+            else:
+                await ctx.send(embed=Embed(color=discord.Color.red(), description="I need the permission `Ban Members` to sync the bans!"))
 
         @bot.command()
         async def listbans(ctx):
