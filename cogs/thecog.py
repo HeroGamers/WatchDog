@@ -31,7 +31,7 @@ class TheCog:
         async def get_bans(ctx):
             """Get all the bans in List form."""
             #if ctx.author.id in globalmods.mods:
-            mods = list(map(int, os.getenv('mods').split()))
+            mods = list(map(int, os.getenv("mods").split()))
             if ctx.author.id in mods:
                 #banguild = bot.get_guild(config.banlistguild)
                 banguild = bot.get_guild(int(os.getenv('banlistguild')))
@@ -44,7 +44,7 @@ class TheCog:
         async def ban(ctx, user_id: int, *, reason = "No reason given"):
             """Bans a user globally."""
             #if ctx.author.id in globalmods.mods:
-            mods = list(map(int, os.getenv('mods').split()))
+            mods = list(map(int, os.getenv("mods").split()))
             if ctx.author.id in mods:
                 user = await ctx.bot.get_user_info(user_id)
                 if user == ctx.bot.user:
@@ -71,7 +71,7 @@ class TheCog:
         async def unban(ctx, user_id: int, *, reason = "No reason given"):
             """Unbans an user globally."""
             #if ctx.author.id in globalmods.mods:
-            mods = list(map(int, os.getenv('mods').split()))
+            mods = list(map(int, os.getenv("mods").split()))
             if ctx.author.id in mods:
                 user = await ctx.bot.get_user_info(user_id)
                 embed = discord.Embed(title="Account unbanned", color=discord.Color.green(),
