@@ -24,7 +24,7 @@ async def on_command_error(ctx: commands.Context, error):
     if isinstance(error, commands.NoPrivateMessage):
         await ctx.send("This command cannot be used in private messages")
     elif isinstance(error, commands.BotMissingPermissions):
-        return
+        await ctx.send(embed=Embed(color=discord.Color.red(), description="I need the permission `Ban Members` to sync the bans!"))
     elif isinstance(error, commands.MissingPermissions):
         await ctx.send(embed=Embed(color=discord.Color.red(), description="You are missing the permission `Ban Members`!"))
     elif isinstance(error, commands.CheckFailure):
