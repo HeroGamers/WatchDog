@@ -1,8 +1,6 @@
 import asyncio
 import discord
 from discord import Embed
-#import globalmods
-#import config
 from discord.ext import commands
 import os
 
@@ -16,7 +14,6 @@ class TheCog:
         @commands.has_permissions(ban_members=True) 
         async def sync(ctx):
             """Sync the bans."""
-            #banguild = bot.get_guild(config.banlistguild)
             banguild = bot.get_guild(int(os.getenv('banlistguild')))
             ban_list = await banguild.bans()
             for BanEntry in ban_list:
@@ -28,12 +25,10 @@ class TheCog:
             await ctx.send(embed=embed)
 
         @bot.command()
-        async def get_bans(ctx):
+        async def listbans(ctx):
             """Get all the bans in List form."""
-            #if ctx.author.id in globalmods.mods:
             mods = list(map(int, os.getenv("mods").split()))
             if ctx.author.id in mods:
-                #banguild = bot.get_guild(config.banlistguild)
                 banguild = bot.get_guild(int(os.getenv('banlistguild')))
                 ban_list = await banguild.bans()
                 await ctx.send(embed=Embed(color=discord.Color.purple(), description="%s" % ban_list))
@@ -43,13 +38,11 @@ class TheCog:
         @bot.command()
         async def ban(ctx, user_id: int, *, reason = "No reason given"):
             """Bans a user globally."""
-            #if ctx.author.id in globalmods.mods:
             mods = list(map(int, os.getenv("mods").split()))
             if ctx.author.id in mods:
                 user = await ctx.bot.get_user_info(user_id)
                 if user == ctx.bot.user:
                     await ctx.send(embed=Embed(color=discord.Color.red(), description="What are you trying to do? Shame!"))
-                #elif user in globalmods.mods:
                 elif user in mods:
                     await ctx.send(embed=Embed(color=discord.Color.red(), description="You cannot ban a Global Moderator, sorry!"))
                 else:
@@ -61,7 +54,6 @@ class TheCog:
                     guild = []
                     for guild in bot.guilds:
                         await guild.ban(user, reason=f"WatchDog - Global Ban")
-                    #channel = bot.get_channel(config.botlog)
                     channel = bot.get_channel(int(os.getenv('botlog')))
                     await channel.send(embed=Embed(color=discord.Color.red(), description="Moderator `%s` banned `%s`" % (ctx.author.name, user.name)))
             else:
@@ -70,7 +62,6 @@ class TheCog:
         @bot.command()
         async def unban(ctx, user_id: int, *, reason = "No reason given"):
             """Unbans an user globally."""
-            #if ctx.author.id in globalmods.mods:
             mods = list(map(int, os.getenv("mods").split()))
             if ctx.author.id in mods:
                 user = await ctx.bot.get_user_info(user_id)
@@ -81,7 +72,6 @@ class TheCog:
                 await ctx.send(embed=embed)
                 for guild in bot.guilds:   
                     await guild.unban(user, reason=f"WatchDog - Global Unban")
-                #channel = bot.get_channel(config.botlog)
                 channel = bot.get_channel(int(os.getenv('botlog')))
                 await channel.send(embed=Embed(color=discord.Color.green(), description="Moderator `%s` unbanned `%s`" % (ctx.author.name, user.name)))
             else:
