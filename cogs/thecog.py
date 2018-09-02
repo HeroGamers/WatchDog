@@ -17,7 +17,7 @@ class TheCog:
         async def sync(ctx):
             """Sync the bans."""
             #banguild = bot.get_guild(config.banlistguild)
-            banguild = bot.get_guild(os.getenv('banlistguild'))
+            banguild = bot.get_guild(int(os.getenv('banlistguild')))
             ban_list = await banguild.bans()
             for BanEntry in ban_list:
                 await ctx.guild.ban(BanEntry.user, reason=f"WatchDog - Global Ban")
@@ -33,7 +33,7 @@ class TheCog:
             #if ctx.author.id in globalmods.mods:
             if ctx.author.id in os.getenv('mods'):
                 #banguild = bot.get_guild(config.banlistguild)
-                banguild = bot.get_guild(os.getenv('banlistguild'))
+                banguild = bot.get_guild(int(os.getenv('banlistguild')))
                 ban_list = await banguild.bans()
                 await ctx.send(embed=Embed(color=discord.Color.purple(), description="%s" % ban_list))
             else:
@@ -60,7 +60,7 @@ class TheCog:
                     for guild in bot.guilds:
                         await guild.ban(user, reason=f"WatchDog - Global Ban")
                     #channel = bot.get_channel(config.botlog)
-                    channel = bot.get_channel(os.getenv('botlog'))
+                    channel = bot.get_channel(int(os.getenv('botlog')))
                     await channel.send(embed=Embed(color=discord.Color.red(), description="Moderator `%s` banned `%s`" % (ctx.author.name, user.name)))
             else:
                 await ctx.send(embed=Embed(color=discord.Color.red(), description="You are not a Global Moderator! Shame!"))
@@ -79,7 +79,7 @@ class TheCog:
                 for guild in bot.guilds:   
                     await guild.unban(user, reason=f"WatchDog - Global Unban")
                 #channel = bot.get_channel(config.botlog)
-                channel = bot.get_channel(os.getenv('botlog'))
+                channel = bot.get_channel(int(os.getenv('botlog')))
                 await channel.send(embed=Embed(color=discord.Color.green(), description="Moderator `%s` unbanned `%s`" % (ctx.author.name, user.name)))
             else:
                 await ctx.send(embed=Embed(color=discord.Color.red(), description="You are not a Global Moderator! Shame!"))
