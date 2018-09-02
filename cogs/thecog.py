@@ -1,7 +1,7 @@
 import asyncio
 import discord
 from discord import Embed
-import globalmods
+#import globalmods
 #import config
 from discord.ext import commands
 import os
@@ -30,7 +30,8 @@ class TheCog:
         @bot.command()
         async def get_bans(ctx):
             """Get all the bans in List form."""
-            if ctx.author.id in globalmods.mods:
+            #if ctx.author.id in globalmods.mods:
+            if ctx.author.id in os.getenv('mods'):
                 #banguild = bot.get_guild(config.banlistguild)
                 banguild = bot.get_guild(os.getenv('banlistguild'))
                 ban_list = await banguild.bans()
@@ -41,11 +42,13 @@ class TheCog:
         @bot.command()
         async def ban(ctx, user_id: int, *, reason = "No reason given"):
             """Bans a user globally."""
-            if ctx.author.id in globalmods.mods:
+            #if ctx.author.id in globalmods.mods:
+            if ctx.author.id in os.getenv('mods'):
                 user = await ctx.bot.get_user_info(user_id)
                 if user == ctx.bot.user:
                     await ctx.send(embed=Embed(color=discord.Color.red(), description="What are you trying to do? Shame!"))
-                elif user in globalmods.mods:
+                #elif user in globalmods.mods:
+                elif user in os.getenv('mods'):
                     await ctx.send(embed=Embed(color=discord.Color.red(), description="You cannot ban a Global Moderator, sorry!"))
                 else:
                     embed = discord.Embed(title="Account banned", color=discord.Color.green(),
@@ -65,7 +68,8 @@ class TheCog:
         @bot.command()
         async def unban(ctx, user_id: int, *, reason = "No reason given"):
             """Unbans an user globally."""
-            if ctx.author.id in globalmods.mods:
+            #if ctx.author.id in globalmods.mods:
+            if ctx.author.id in os.getenv('mods'):
                 user = await ctx.bot.get_user_info(user_id)
                 embed = discord.Embed(title="Account unbanned", color=discord.Color.green(),
                                     description="`%s` has been globally unbanned 👌" % user)
