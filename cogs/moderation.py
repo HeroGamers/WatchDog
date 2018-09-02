@@ -61,7 +61,7 @@ class Moderation:
 
         @bot.command()
         async def unban(ctx, user_id: int, *, reason = "No reason given"):
-            """Unbans an user globally."""
+            """Unbans a user globally."""
             mods = list(map(int, os.getenv("mods").split()))
             if ctx.author.id in mods:
                 user = await ctx.bot.get_user_info(user_id)
