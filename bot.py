@@ -9,7 +9,7 @@ import os
 
 bot = commands.Bot(command_prefix=os.getenv('prefix'), description='I ban people who deserves so...')
 
-startup_extensions = ["thecog"]
+startup_extensions = ["moderation"]
 
 @bot.event
 async def on_ready():
