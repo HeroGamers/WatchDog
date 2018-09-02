@@ -2,7 +2,7 @@ import asyncio
 import discord
 from discord import Embed
 import globalmods
-import config
+#import config
 from discord.ext import commands
 import os
 

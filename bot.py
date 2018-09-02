@@ -4,7 +4,7 @@ import datetime
 from discord.ext import commands
 from discord import Embed
 from pathlib import Path
-import config
+#import config
 import globalmods
 import sys, traceback
 import os
