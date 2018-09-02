@@ -17,9 +17,9 @@ async def on_ready():
     print("[Info] Bot startup done.")
     channel = bot.get_channel(config.botlog)
     await channel.send("**[Info]** Bot startup done.")
-    for s in bot.guilds:
-        print(" - %s (%s)" % (s.name, s.id))
-        await channel.send(" - `%s` (`%s`)" % (s.name, s.id))
+#    for s in bot.guilds:
+#        print(" - %s (%s)" % (s.name, s.id))
+#        await channel.send(" - `%s` (`%s`)" % (s.name, s.id))
     print("\n")
     await bot.change_presence(game=discord.Game(name="with the banhammer"))
 
@@ -49,14 +49,14 @@ async def on_guild_join(guild):
     channel = bot.get_channel(config.botlog)
     print("[Info] Joined a new guild (`%s` - `%s`)" % (guild.name, guild.id))
     await channel.send("**[Info]** Joined a new guild (`%s` - `%s`)" % (guild.name, guild.id))
-    print("[Info] Syncing bans...")
-    await channel.send("**[Info]** Syncing bans...")
+#    print("[Info] Syncing bans...")
+#    await channel.send("**[Info]** Syncing bans...")
     banguild = bot.get_guild(config.banlistguild)
     ban_list = await banguild.bans()
     for BanEntry in ban_list:
         await guild.ban(BanEntry.user, reason=f"WatchDog - Global Ban")
-    print("**[Info]** Synced bans!")
-    await channel.send("**[Info]** Synced bans!")
+#    print("[Info] Synced bans!")
+#    await channel.send("**[Info]** Synced bans!")
 
 @bot.event
 async def on_message(message:discord.Message):
@@ -67,7 +67,7 @@ async def on_message(message:discord.Message):
         if ctx.command is not None:
             print("[Command] %s (%s) just used the %s command in the guild %s (%s)" % (ctx.author.name, ctx.author.id, ctx.invoked_with, ctx.guild.name, ctx.guild.id))
             channel = bot.get_channel(config.botlog)
-            await channel.send("**[Command]** `%s` (`%s`) just used the `%s` command in the guild `%s` (`%s`)" % (ctx.author.name, ctx.author.id, ctx.invoked_with, ctx.guild.name, ctx.guild.id))
+            await channel.send("**[Command]** `%s` (%s) just used the `%s` command in the guild `%s` (%s), in the channel `%s` (%s)" % (ctx.author.name, ctx.author.id, ctx.invoked_with, ctx.guild.name, ctx.guild.id, ctx.channel.name, ctx.channel.id))
             await bot.invoke(ctx)
     else:
         return
