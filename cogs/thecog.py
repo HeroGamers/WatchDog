@@ -4,6 +4,7 @@ from discord import Embed
 import globalmods
 import config
 from discord.ext import commands
+import os
 
 class TheCog:
     def __init__(self,bot):
@@ -15,7 +16,8 @@ class TheCog:
         @commands.has_permissions(ban_members=True) 
         async def sync(ctx):
             """Sync the bans."""
-            banguild = bot.get_guild(config.banlistguild)
+            #banguild = bot.get_guild(config.banlistguild)
+            banguild = bot.get_guild(os.getenv('banlistguild'))
             ban_list = await banguild.bans()
             for BanEntry in ban_list:
                 await ctx.guild.ban(BanEntry.user, reason=f"WatchDog - Global Ban")
@@ -29,7 +31,8 @@ class TheCog:
         async def get_bans(ctx):
             """Get all the bans in List form."""
             if ctx.author.id in globalmods.mods:
-                banguild = bot.get_guild(config.banlistguild)
+                #banguild = bot.get_guild(config.banlistguild)
+                banguild = bot.get_guild(os.getenv('banlistguild'))
                 ban_list = await banguild.bans()
                 await ctx.send(embed=Embed(color=discord.Color.purple(), description="%s" % ban_list))
             else:
@@ -53,7 +56,8 @@ class TheCog:
                     guild = []
                     for guild in bot.guilds:
                         await guild.ban(user, reason=f"WatchDog - Global Ban")
-                    channel = bot.get_channel(config.botlog)
+                    #channel = bot.get_channel(config.botlog)
+                    channel = bot.get_channel(os.getenv('botlog'))
                     await channel.send(embed=Embed(color=discord.Color.red(), description="Moderator `%s` banned `%s`" % (ctx.author.name, user.name)))
             else:
                 await ctx.send(embed=Embed(color=discord.Color.red(), description="You are not a Global Moderator! Shame!"))
@@ -70,7 +74,8 @@ class TheCog:
                 await ctx.send(embed=embed)
                 for guild in bot.guilds:   
                     await guild.unban(user, reason=f"WatchDog - Global Unban")
-                channel = bot.get_channel(config.botlog)
+                #channel = bot.get_channel(config.botlog)
+                channel = bot.get_channel(os.getenv('botlog'))
                 await channel.send(embed=Embed(color=discord.Color.green(), description="Moderator `%s` unbanned `%s`" % (ctx.author.name, user.name)))
             else:
                 await ctx.send(embed=Embed(color=discord.Color.red(), description="You are not a Global Moderator! Shame!"))
