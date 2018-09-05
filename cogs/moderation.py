@@ -65,14 +65,14 @@ class Moderation:
                 elif user.id in mods:
                     await ctx.send(embed=Embed(color=discord.Color.red(), description="You cannot ban a Global Moderator, sorry!"))
                 else:
+                    guild = []
+                    for guild in bot.guilds:
+                        await guild.ban(user, reason=f"WatchDog - Global Ban")
                     embed = discord.Embed(title="Account banned", color=discord.Color.green(),
                         description="`%s` has been globally banned 👌" % user)
                     embed.set_footer(text=ctx.author.name, icon_url=ctx.author.avatar_url)
                     embed.set_image(url="https://cdn.discordapp.com/attachments/456229881064325131/475498849696219141/ban.gif")
                     await ctx.send(embed=embed)
-                    guild = []
-                    for guild in bot.guilds:
-                        await guild.ban(user, reason=f"WatchDog - Global Ban")
                     channel = bot.get_channel(int(os.getenv('botlog')))
                     await channel.send(embed=Embed(color=discord.Color.red(), description="Moderator `%s` banned `%s`" % (ctx.author.name, user.name)))
             else:
