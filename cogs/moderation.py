@@ -17,7 +17,11 @@ class Moderation:
             banguild = bot.get_guild(int(os.getenv('banlistguild')))
             ban_list = await banguild.bans()
             for BanEntry in ban_list:
-                await ctx.guild.ban(BanEntry.user, reason=f"WatchDog - Global Ban")
+                try:
+                    await ctx.guild.ban(BanEntry.user, reason=f"WatchDog - Global Ban")
+                except:
+                    channel = bot.get_channel(int(os.getenv('botlogfail')))
+                    await channel.send("**[Info]** Could not syncban the user `%s` (%s) in the guild `%s` (%s)" % (BanEntry.user.name, BanEntry.user.id, ctx.guild.name, ctx.guild.id))
             embed = discord.Embed(title="Sync complete", color=discord.Color.green(),
                 description="Synchronisation complete! 👌")
             embed.set_footer(text=ctx.author.name, icon_url=ctx.author.avatar_url)
@@ -34,7 +38,11 @@ class Moderation:
             if ctx.author.id in mods:
                 for guild in bot.guilds:
                     for BanEntry in ban_list:
-                        await guild.ban(BanEntry.user, reason=f"WatchDog - Global Ban")
+                        try:
+                            await guild.ban(BanEntry.user, reason=f"WatchDog - Global Ban")
+                        except:
+                            channel = bot.get_channel(int(os.getenv('botlogfail')))
+                            await channel.send("**[Info]** Could not revsyncban the user `%s` (%s) in the guild `%s` (%s)" % (BanEntry.user.name, BanEntry.user.id, guild.name, guild.id))
                 embed = discord.Embed(title="Revsync complete", color=discord.Color.green(),
                     description="Reverse synchronisation complete! 👌")
                 embed.set_footer(text=ctx.author.name, icon_url=ctx.author.avatar_url)
@@ -70,7 +78,7 @@ class Moderation:
                         try:
                             await guild.ban(user, reason=f"WatchDog - Global Ban")
                         except:
-                            channel = bot.get_channel(int(os.getenv('botlog')))
+                            channel = bot.get_channel(int(os.getenv('botlogfail')))
                             await channel.send("**[Info]** Could not ban the user in the guild `%s` (%s)" % (guild.name, guild.id))
                     embed = discord.Embed(title="Account banned", color=discord.Color.green(),
                         description="`%s` has been globally banned 👌" % user)
@@ -92,7 +100,7 @@ class Moderation:
                     try:
                         await guild.unban(user, reason=f"WatchDog - Global Unban")
                     except:
-                        channel = bot.get_channel(int(os.getenv('botlog')))
+                        channel = bot.get_channel(int(os.getenv('botlogfail')))
                         await channel.send("**[Info]** Could not unban the user in the guild `%s` (%s)" % (guild.name, guild.id))
                 embed = discord.Embed(title="Account unbanned", color=discord.Color.green(),
                                     description="`%s` has been globally unbanned 👌" % user)
