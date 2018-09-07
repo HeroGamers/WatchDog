@@ -79,7 +79,7 @@ class Moderation:
                             await guild.ban(user, reason=f"WatchDog - Global Ban")
                         except:
                             channel = bot.get_channel(int(os.getenv('botlogfail')))
-                            await channel.send("**[Info]** Could not ban the user in the guild `%s` (%s)" % (guild.name, guild.id))
+                            await channel.send("**[Info]** Could not ban the user `%s` (%s) in the guild `%s` (%s)" % (user.name, user.id, guild.name, guild.id))
                     embed = discord.Embed(title="Account banned", color=discord.Color.green(),
                         description="`%s` has been globally banned 👌" % user)
                     embed.set_footer(text=ctx.author.name, icon_url=ctx.author.avatar_url)
@@ -101,7 +101,7 @@ class Moderation:
                         await guild.unban(user, reason=f"WatchDog - Global Unban")
                     except:
                         channel = bot.get_channel(int(os.getenv('botlogfail')))
-                        await channel.send("**[Info]** Could not unban the user in the guild `%s` (%s)" % (guild.name, guild.id))
+                        await channel.send("**[Info]** Could not unban the user `%s` (%s) in the guild `%s` (%s)" % (user.name, user.id, guild.name, guild.id))
                 embed = discord.Embed(title="Account unbanned", color=discord.Color.green(),
                                     description="`%s` has been globally unbanned 👌" % user)
                 embed.set_footer(text=ctx.author.name, icon_url=ctx.author.avatar_url)
