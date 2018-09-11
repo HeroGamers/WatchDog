@@ -87,6 +87,13 @@ class Moderation:
                     await ctx.send(embed=embed)
                     channel = bot.get_channel(int(os.getenv('botlog')))
                     await channel.send(embed=Embed(color=discord.Color.red(), description="Moderator `%s` banned `%s` - (%s)" % (ctx.author.name, user.name, user.id)))
+                    #Send public ban notif in public ban list
+                    pblchannel = bot.get_channel(int(os.getenv('pbanlist')))
+                    pblembed = discord.Embed(title="Account banned", color=discord.Color.red(),
+                        description="`%s` has been globally banned" % user.id)
+                    pblembed.set_footer(text="%s has been globally banned" % user, icon_url="https://cdn.discordapp.com/attachments/456229881064325131/489102109363666954/366902409508814848.png")
+                    pblembed.set_thumbnail(url=user.avatar_url)
+                    await pblchannel.send(embed=pblembed)
             else:
                 await ctx.send(embed=Embed(color=discord.Color.red(), description="You are not a Global Moderator! Shame!"))
 
@@ -109,6 +116,13 @@ class Moderation:
                 await ctx.send(embed=embed)
                 channel = bot.get_channel(int(os.getenv('botlog')))
                 await channel.send(embed=Embed(color=discord.Color.green(), description="Moderator `%s` unbanned `%s` - (%s)" % (ctx.author.name, user.name, user.id)))
+                #Send public unban notif in public ban list
+                pblchannel = bot.get_channel(int(os.getenv('pbanlist')))
+                pblembed = discord.Embed(title="Account unbanned", color=discord.Color.green(),
+                    description="`%s` has been globally unbanned" % user.id)
+                pblembed.set_footer(text="%s has been globally unbanned" % user, icon_url="https://cdn.discordapp.com/attachments/456229881064325131/489102109363666954/366902409508814848.png")
+                pblembed.set_thumbnail(url=user.avatar_url)
+                await pblchannel.send(embed=pblembed)
             else:
                 await ctx.send(embed=Embed(color=discord.Color.red(), description="You are not a Global Moderator! Shame!"))
             
