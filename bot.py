@@ -6,6 +6,7 @@ from discord import Embed
 from pathlib import Path
 import sys, traceback
 import os
+import config
 
 bot = commands.Bot(command_prefix=os.getenv('prefix'), description='I ban people who deserves so...')
 
