@@ -38,7 +38,7 @@ class TestCog:
 
         @bot.command()
         async def testunban(ctx, user_id: int, *, reason = "No reason given"):
-            """Unbans a user globally."""
+            """TestUnbans a user globally."""
             mods = list(map(int, os.getenv("mods").split()))
             if ctx.author.id in mods:
                 user = await ctx.bot.get_user_info(user_id)
@@ -56,6 +56,29 @@ class TestCog:
                 pblembed.set_footer(text="%s has been globally unbanned" % user, icon_url="https://cdn.discordapp.com/attachments/456229881064325131/489102109363666954/366902409508814848.png")
                 pblembed.set_thumbnail(url=user.avatar_url)
                 await pblchannel.send(embed=pblembed)
+            else:
+                await ctx.send(embed=Embed(color=discord.Color.red(), description="You are not a Global Moderator! Shame!"))
+
+        @bot.command()
+        async def pblbansync(ctx):
+            """Onetime command to sync all bans to the Public Ban List"""
+            mods = list(map(int, os.getenv("mods").split()))
+            if ctx.author.id in mods:
+                banguild = bot.get_guild(int(os.getenv('banlistguild')))
+                ban_list = await banguild.bans()
+                for BanEntry in ban_list:
+                    try:
+                        #Send public ban notif in public ban list
+                        pblchannel = bot.get_channel(int(os.getenv('pbanlist')))
+                        pblembed = discord.Embed(title="Account banned", color=discord.Color.red(),
+                            description="`%s` has been globally banned" % BanEntry.user.id)
+                        pblembed.set_footer(text="%s has been globally banned" % BanEntry.user, icon_url="https://cdn.discordapp.com/attachments/456229881064325131/489102109363666954/366902409508814848.png")
+                        pblembed.set_thumbnail(url=BanEntry.user.avatar_url)
+                        await pblchannel.send(embed=pblembed)
+                    except:
+                        channel = bot.get_channel(int(os.getenv('botlogfail')))
+                        await channel.send("**[Info]** Could not show the user `%s` (%s) in the Public Ban List" % (BanEntry.user.name, BanEntry.user.id))
+                await ctx.send("Public Ban list has been synced!")
             else:
                 await ctx.send(embed=Embed(color=discord.Color.red(), description="You are not a Global Moderator! Shame!"))
             
