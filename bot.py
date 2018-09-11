@@ -6,7 +6,10 @@ from discord import Embed
 from pathlib import Path
 import sys, traceback
 import os
-import config
+try:
+    import config
+except ImportError:
+    print("Couldn't import config.py")
 
 bot = commands.Bot(command_prefix=os.getenv('prefix'), description='I ban people who deserves so...')
 
