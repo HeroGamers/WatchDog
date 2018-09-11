@@ -13,8 +13,7 @@ except ImportError:
 
 bot = commands.Bot(command_prefix=os.getenv('prefix'), description='I ban people who deserves so...')
 
-startup_extensions = ["moderation",
-                      "testcog"]
+startup_extensions = ["moderation"]
 
 @bot.event
 async def on_ready():
