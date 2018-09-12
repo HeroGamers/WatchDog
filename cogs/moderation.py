@@ -40,6 +40,13 @@ class Moderation:
                     for BanEntry in ban_list:
                         try:
                             await guild.ban(BanEntry.user, reason=f"WatchDog - Global Ban")
+                            #Send public ban notif in public ban list
+                            pblchannel = bot.get_channel(int(os.getenv('pbanlist')))
+                            pblembed = discord.Embed(title="Account banned", color=discord.Color.red(),
+                                description="`%s` has been globally banned" % BanEntry.user.id)
+                            pblembed.set_footer(text="%s has been globally banned" % BanEntry.user, icon_url="https://cdn.discordapp.com/attachments/456229881064325131/489102109363666954/366902409508814848.png")
+                            pblembed.set_thumbnail(url=BanEntry.user.avatar_url)
+                            await pblchannel.send(embed=pblembed)
                         except:
                             channel = bot.get_channel(int(os.getenv('botlogfail')))
                             await channel.send("**[Info]** Could not revsyncban the user `%s` (%s) in the guild `%s` (%s)" % (BanEntry.user.name, BanEntry.user.id, guild.name, guild.id))
