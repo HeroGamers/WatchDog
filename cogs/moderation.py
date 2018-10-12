@@ -38,11 +38,36 @@ class Moderation:
             if ctx.author.id in mods:
                 for guild in bot.guilds:
                     for BanEntry in ban_list:
-                        try:
-                            await guild.ban(BanEntry.user, reason=f"WatchDog - Global Ban")
-                        except:
+                        if BanEntry.user == ctx.bot.user:
                             channel = bot.get_channel(int(os.getenv('botlogfail')))
-                            await channel.send("**[Info]** Could not revsyncban the user `%s` (%s) in the guild `%s` (%s)" % (BanEntry.user.name, BanEntry.user.id, guild.name, guild.id))
+                            await channel.send("**[Alert]** Someone tried to ban the bot during a revsync. Moderator: `%s` (%s) in the guild `%s` (%s)" % (ctx.author.name, ctx.author.id, guild.name, guild.id))
+                        elif BanEntry.user.id in mods:
+                            channel = bot.get_channel(int(os.getenv('botlogfail')))
+                            await channel.send("**[Alert]** Someone tried to ban a Global Moderator during a revsync. Moderator: `%s` (%s) in the guild `%s` (%s)" % (ctx.author.name, ctx.author.id, guild.name, guild.id))
+                        else:
+                            try:
+                                await guild.ban(BanEntry.user, reason=f"WatchDog - Global Ban")
+                            except:
+                                channel = bot.get_channel(int(os.getenv('botlogfail')))
+                                await channel.send("**[Info]** Could not revsyncban the user `%s` (%s) in the guild `%s` (%s)" % (BanEntry.user.name, BanEntry.user.id, guild.name, guild.id))
+                            #Send public ban notif in public ban list
+                            pblchannel = bot.get_channel(int(os.getenv('pbanlist')))
+                            pblembed = discord.Embed(title="Account banned", color=discord.Color.red(),
+                                description="`%s` has been globally banned" % BanEntry.user.id)
+                            pblembed.set_footer(text="%s has been globally banned" % BanEntry.user, icon_url="https://cdn.discordapp.com/attachments/456229881064325131/489102109363666954/366902409508814848.png")
+                            pblembed.set_thumbnail(url=BanEntry.user.avatar_url)
+                            await pblchannel.send(embed=pblembed)
+                            #Send private ban notif in private moderator ban list
+                            prvchannel = bot.get_channel(int(os.getenv('prvbanlist')))
+                            prvembed = discord.Embed(title="Account banned", color=discord.Color.red(),
+                                description="`%s` has been globally banned" % BanEntry.user.id)
+                            prvembed.add_field(name="Moderator", value="%s (`%s`)" % (ctx.author.name, ctx.author.id), inline=True)
+                            prvembed.add_field(name="Name when banned", value="%s" % BanEntry.user, inline=True)
+                            prvembed.add_field(name="In server", value="%s (`%s`)" % (guild.name, guild.id), inline=True)
+                            prvembed.add_field(name="In channel", value="%s (`%s`)" % (ctx.channel.name, ctx.channel.id), inline=True)
+                            prvembed.set_footer(text="%s has been globally banned" % BanEntry.user, icon_url="https://cdn.discordapp.com/attachments/456229881064325131/489102109363666954/366902409508814848.png")
+                            prvembed.set_thumbnail(url=BanEntry.user.avatar_url)
+                            await prvchannel.send(embed=prvembed)
                 embed = discord.Embed(title="Revsync complete", color=discord.Color.green(),
                     description="Reverse synchronisation complete! 👌")
                 embed.set_footer(text=ctx.author.name, icon_url=ctx.author.avatar_url)
@@ -51,16 +76,17 @@ class Moderation:
             else:
                 await ctx.send(embed=Embed(color=discord.Color.red(), description="You are not a Global Moderator! Shame!"))
 
-        @bot.command()
-        async def listbans(ctx):
-            """Get all the bans in List form."""
-            mods = list(map(int, os.getenv("mods").split()))
-            if ctx.author.id in mods:
-                banguild = bot.get_guild(int(os.getenv('banlistguild')))
-                ban_list = await banguild.bans()
-                await ctx.send(embed=Embed(color=discord.Color.purple(), description="%s" % ban_list))
-            else:
-                await ctx.send(embed=Embed(color=discord.Color.red(), description="You are not a Global Moderator! Shame!"))
+#   Disabled because chat cannot handle that big a list anymore - was used for debugging
+#        @bot.command()
+#        async def listbans(ctx):
+#            """Get all the bans in List form."""
+#            mods = list(map(int, os.getenv("mods").split()))
+#            if ctx.author.id in mods:
+#                banguild = bot.get_guild(int(os.getenv('banlistguild')))
+#                ban_list = await banguild.bans()
+#                await ctx.send(embed=Embed(color=discord.Color.purple(), description="%s" % ban_list))
+#            else:
+#                await ctx.send(embed=Embed(color=discord.Color.red(), description="You are not a Global Moderator! Shame!"))
 
         @bot.command()
         async def ban(ctx, user_id: int, *, reason = "No reason given"):
@@ -94,6 +120,17 @@ class Moderation:
                     pblembed.set_footer(text="%s has been globally banned" % user, icon_url="https://cdn.discordapp.com/attachments/456229881064325131/489102109363666954/366902409508814848.png")
                     pblembed.set_thumbnail(url=user.avatar_url)
                     await pblchannel.send(embed=pblembed)
+                    #Send private ban notif in private moderator ban list
+                    prvchannel = bot.get_channel(int(os.getenv('prvbanlist')))
+                    prvembed = discord.Embed(title="Account banned", color=discord.Color.red(),
+                        description="`%s` has been globally banned" % user.id)
+                    prvembed.add_field(name="Moderator", value="%s (`%s`)" % (ctx.author.name, ctx.author.id), inline=True)
+                    prvembed.add_field(name="Name when banned", value="%s" % user, inline=True)
+                    prvembed.add_field(name="In server", value="%s (`%s`)" % (guild.name, guild.id), inline=True)
+                    prvembed.add_field(name="In channel", value="%s (`%s`)" % (ctx.channel.name, ctx.channel.id), inline=True)
+                    prvembed.set_footer(text="%s has been globally banned" % user, icon_url="https://cdn.discordapp.com/attachments/456229881064325131/489102109363666954/366902409508814848.png")
+                    prvembed.set_thumbnail(url=user.avatar_url)
+                    await prvchannel.send(embed=prvembed)
             else:
                 await ctx.send(embed=Embed(color=discord.Color.red(), description="You are not a Global Moderator! Shame!"))
 
@@ -123,6 +160,17 @@ class Moderation:
                 pblembed.set_footer(text="%s has been globally unbanned" % user, icon_url="https://cdn.discordapp.com/attachments/456229881064325131/489102109363666954/366902409508814848.png")
                 pblembed.set_thumbnail(url=user.avatar_url)
                 await pblchannel.send(embed=pblembed)
+                #Send private ban notif in private moderator ban list
+                prvchannel = bot.get_channel(int(os.getenv('prvbanlist')))
+                prvembed = discord.Embed(title="Account unbanned", color=discord.Color.green(),
+                    description="`%s` has been globally unbanned" % user.id)
+                prvembed.add_field(name="Moderator", value="%s (`%s`)" % (ctx.author.name, ctx.author.id), inline=True)
+                prvembed.add_field(name="Name when unbanned", value="%s" % user, inline=True)
+                prvembed.add_field(name="In server", value="%s (`%s`)" % (guild.name, guild.id), inline=True)
+                prvembed.add_field(name="In channel", value="%s (`%s`)" % (ctx.channel.name, ctx.channel.id), inline=True)
+                prvembed.set_footer(text="%s has been globally unbanned" % user, icon_url="https://cdn.discordapp.com/attachments/456229881064325131/489102109363666954/366902409508814848.png")
+                prvembed.set_thumbnail(url=user.avatar_url)
+                await prvchannel.send(embed=prvembed)
             else:
                 await ctx.send(embed=Embed(color=discord.Color.red(), description="You are not a Global Moderator! Shame!"))
             
