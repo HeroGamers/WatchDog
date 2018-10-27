@@ -23,20 +23,14 @@ class Info:
             """Retrives information about the bot - GM only"""
             mods = list(map(int, os.getenv("mods").split()))
             if ctx.author.id in mods:
-                guild = []
-                for guild in bot.guilds:
-                    try:
-                        await guild.ban(user, reason=f"WatchDog - Global Ban")
-                    except:
-                        channel = bot.get_channel(int(os.getenv('botlogfail')))
-                        await channel.send("**[Info]** Could not ban the user `%s` (%s) in the guild `%s` (%s)" % (user.name, user.id, guild.name, guild.id))
                 embed = discord.Embed(title="Bot Information", color=discord.Color.green(),
-                    description="`%s` has been globally banned 👌" % user)
+                    description="")
+                embed.add_field(name="Creation Date", value="%s" % discord.utils.snowflake_time(ctx.bot.user.id).strftime("%Y-%m-%d %H:%M:%S"), inline=True)
+                embed.add_field(name="Guilds", value="%s" % len(bot.guilds), inline=True)
+                ban_list = await ctx.guild.bans()
+                embed.add_field(name="Global Bans", value="%s" % len(ban_list), inline=True)
                 embed.set_footer(text=ctx.author.name, icon_url=ctx.author.avatar_url)
-                embed.set_image(url="https://cdn.discordapp.com/attachments/456229881064325131/475498849696219141/ban.gif")
                 await ctx.send(embed=embed)
-                channel = bot.get_channel(int(os.getenv('botlog')))
-                await channel.send(embed=Embed(color=discord.Color.red(), description="Moderator `%s` banned `%s` - (%s)" % (ctx.author.name, user.name, user.id)))
             else:
                 await ctx.send(embed=Embed(color=discord.Color.red(), description="You are not a Global Moderator! Shame!"))
 def setup(bot):
