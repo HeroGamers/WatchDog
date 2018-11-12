@@ -4,7 +4,7 @@ from discord import Embed
 from discord.ext import commands
 import os
 
-class TestCog:
+class Test:
     def __init__(self,bot):
         self.bot = bot
         
@@ -101,4 +101,4 @@ class TestCog:
                 await ctx.send(embed=Embed(color=discord.Color.red(), description="You are not a Global Moderator! Shame!"))
             
 def setup(bot):
-    bot.add_cog(TestCog(bot))
+    bot.add_cog(Test(bot))

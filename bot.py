@@ -13,7 +13,8 @@ except ImportError:
 
 bot = commands.Bot(command_prefix=os.getenv('prefix'), description='I ban people who deserves so...')
 
-startup_extensions = ["moderation",
+startup_extensions = ["essentials",
+                      "moderation",
                       "info"]
 
 @bot.event
@@ -76,6 +77,6 @@ if __name__ == '__main__':
         try:
             bot.load_extension(f"cogs.{extension}")
         except Exception as e:
-            print(f"[ERROR] Failed to load extention {extension}.", e)
+            print(f"[ERROR] Failed to load extension {extension}.", e)
 
 bot.run(os.getenv('token'))
