@@ -29,7 +29,7 @@ class Info:
                 embed.add_field(name="Guilds", value="%s" % len(bot.guilds), inline=True)
                 ban_list = await ctx.guild.bans()
                 embed.add_field(name="Global Bans", value="%s" % len(ban_list), inline=True)
-                embed.set_footer(text=ctx.author.name, icon_url=ctx.author.avatar_url)
+                embed.set_footer(text="%s - Global WatchDog Moderator" % ctx.author.name, icon_url=ctx.author.avatar_url)
                 await ctx.send(embed=embed)
             else:
                 await ctx.send(embed=Embed(color=discord.Color.red(), description="You are not a Global Moderator! Shame!"))
