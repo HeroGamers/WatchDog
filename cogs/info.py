@@ -1,7 +1,5 @@
-import asyncio
 import discord
 from discord import Embed
-from discord.ext import commands
 import os
 
 class Info:
@@ -104,6 +102,6 @@ class Info:
                     embed.add_field(name="Status:", value="%s" % status, inline=True)
                 embed.set_field_at(index=3, name="In guild with bot:", value="%s" % inguildwithbot, inline=True)
                 await embed_message.edit(embed=embed)
-            
+
 def setup(bot):
     bot.add_cog(Info(bot))

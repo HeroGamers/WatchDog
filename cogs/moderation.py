@@ -1,4 +1,3 @@
-import asyncio
 import discord
 from discord import Embed
 from discord.ext import commands
@@ -11,7 +10,7 @@ class Moderation:
         @bot.command()
         @commands.guild_only()
         @commands.bot_has_permissions(ban_members=True)
-        @commands.has_permissions(ban_members=True) 
+        @commands.has_permissions(ban_members=True)
         async def sync(ctx):
             """Sync the bans."""
             banguild = bot.get_guild(int(os.getenv('banlistguild')))
@@ -192,7 +191,7 @@ class Moderation:
                 #Sends a message in the botlog
                 channel = bot.get_channel(int(os.getenv('botlog')))
                 await channel.send(embed=Embed(color=discord.Color.green(), description="Moderator `%s` unbanned `%s` - (%s)" % (ctx.author.name, user.name, user.id)))
-                for guild in bot.guilds:   
+                for guild in bot.guilds:
                     try:
                         await guild.unban(user, reason=f"WatchDog - Global Unban")
                     except:
@@ -252,19 +251,27 @@ class Moderation:
                     embed.set_footer(text="%s - Global WatchDog Moderator" % ctx.author.name, icon_url=ctx.author.avatar_url)
                     embed_message = await ctx.send(embed=embed)
                     #ban on own guild
-                    for num in args:
+                    for arg in args:
                         try:
-                            user = await ctx.bot.get_user_info(num)
+                            user = await ctx.bot.get_user_info(arg)
                         except:
+                            argslist = list(args)
+                            argslist.remove(arg)
+                            args = tuple(argslist)
                             continue
                         if user == ctx.bot.user:
                             await ctx.send(embed=Embed(color=discord.Color.red(), description="ID of bot was found in list!"))
+                            argslist = list(args)
+                            argslist.remove(arg)
+                            args = tuple(argslist)
                             continue
                         elif user.id in mods:
                             await ctx.send(embed=Embed(color=discord.Color.red(), description="ID of Global Moderator was found in list!"))
+                            argslist = list(args)
+                            argslist.remove(arg)
+                            args = tuple(argslist)
                             continue
                         else:
-                            argCountAll += 1
                             #Priorize banning all accounts on own guild
                             #tries to ban
                             try:
@@ -276,14 +283,23 @@ class Moderation:
                             channel = bot.get_channel(int(os.getenv('botlog')))
                             await channel.send(embed=Embed(color=discord.Color.red(), description="Moderator `%s` banned `%s` - (%s)" % (ctx.author.name, user.name, user.id)))
                     #ban on all other guilds
-                    for num in args:
+                    for arg in args:
                         try:
-                            user = await ctx.bot.get_user_info(num)
+                            user = await ctx.bot.get_user_info(arg)
                         except:
+                            argslist = list(args)
+                            argslist.remove(arg)
+                            args = tuple(argslist)
                             continue
                         if user == ctx.bot.user:
+                            argslist = list(args)
+                            argslist.remove(arg)
+                            args = tuple(argslist)
                             continue
                         elif user.id in mods:
+                            argslist = list(args)
+                            argslist.remove(arg)
+                            args = tuple(argslist)
                             continue
                         else:
                             #checks other guilds
@@ -331,6 +347,6 @@ class Moderation:
                     await embed_message.edit(embed=embed)
             else:
                 await ctx.send(embed=Embed(color=discord.Color.red(), description="You are not a Global Moderator! Shame!"))
-            
+
 def setup(bot):
     bot.add_cog(Moderation(bot))

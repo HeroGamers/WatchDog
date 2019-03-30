@@ -1,10 +1,7 @@
 import discord
-import asyncio
-import datetime
 from discord.ext import commands
 from discord import Embed
-from pathlib import Path
-import sys, traceback
+import sys
 import os
 try:
     import config

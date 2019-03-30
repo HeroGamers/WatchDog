@@ -1,7 +1,3 @@
-import asyncio
-import discord
-from discord import Embed
-from discord.ext import commands
 import os
 
 class Fun:
@@ -16,6 +12,6 @@ class Fun:
                 await ctx.send("hi fren 👋")
             else:
                 await ctx.send("ur not a fren, sawwi 😓")
-            
+
 def setup(bot):
     bot.add_cog(Fun(bot))
