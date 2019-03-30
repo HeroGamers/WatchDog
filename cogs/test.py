@@ -5,9 +5,9 @@ import os
 class Test:
     def __init__(self,bot):
         self.bot = bot
-        
-        @bot.command()
-        async def testban(ctx, user_id: int, *, reason = "No reason given"):
+
+        @bot.command(name="testban")
+        async def _testban(ctx, user_id: int, *, reason = "No reason given"):
             """TestBans a user globally."""
             mods = list(map(int, os.getenv("mods").split()))
             if ctx.author.id in mods:
@@ -52,8 +52,8 @@ class Test:
             else:
                 await ctx.send(embed=Embed(color=discord.Color.red(), description="You are not a Global Moderator! Shame!"))
 
-        @bot.command()
-        async def testunban(ctx, user_id: int, *, reason = "No reason given"):
+        @bot.command(name="testunban")
+        async def _testunban(ctx, user_id: int, *, reason = "No reason given"):
             """TestUnbans a user globally."""
             mods = list(map(int, os.getenv("mods").split()))
             if ctx.author.id in mods:
@@ -75,8 +75,8 @@ class Test:
             else:
                 await ctx.send(embed=Embed(color=discord.Color.red(), description="You are not a Global Moderator! Shame!"))
 
-        @bot.command()
-        async def pblbansync(ctx):
+        @bot.command(name="pblbansync")
+        async def _pblbansync(ctx):
             """Onetime command to sync all bans to the Public Ban List"""
             mods = list(map(int, os.getenv("mods").split()))
             if ctx.author.id in mods:
@@ -98,8 +98,8 @@ class Test:
             else:
                 await ctx.send(embed=Embed(color=discord.Color.red(), description="You are not a Global Moderator! Shame!"))
 
-        @bot.command()
-        async def testmban(ctx, *args, reason = "No reason given"):
+        @bot.command(name="testmban")
+        async def _testmban(ctx, *args, reason = "No reason given"):
             """Bans multiple users globally."""
             mods = list(map(int, os.getenv("mods").split()))
             if ctx.author.id in mods:

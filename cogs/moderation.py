@@ -7,11 +7,11 @@ class Moderation:
     def __init__(self,bot):
         self.bot = bot
 
-        @bot.command()
+        @bot.command(name="sync")
         @commands.guild_only()
         @commands.bot_has_permissions(ban_members=True)
         @commands.has_permissions(ban_members=True)
-        async def sync(ctx):
+        async def _sync(ctx):
             """Sync the bans."""
             banguild = bot.get_guild(int(os.getenv('banlistguild')))
             ban_list = await banguild.bans()
@@ -42,10 +42,10 @@ class Moderation:
             embed.set_image(url="https://cdn.discordapp.com/attachments/456229881064325131/485934104156569600/happysuccess.gif")
             await embed_message.edit(embed=embed)
 
-        @bot.command()
+        @bot.command(name="revsync", aliases=["reversesync"])
         @commands.guild_only()
         @commands.bot_has_permissions(ban_members=True)
-        async def revsync(ctx):
+        async def _revsync(ctx):
             """Sync bans from server to central, and other guilds."""
             ban_list = await ctx.guild.bans()
             mods = list(map(int, os.getenv("mods").split()))
@@ -106,8 +106,8 @@ class Moderation:
             else:
                 await ctx.send(embed=Embed(color=discord.Color.red(), description="You are not a Global Moderator! Shame!"))
 
-        @bot.command()
-        async def ban(ctx, user_id: int, *, reason = "No reason given"):
+        @bot.command(name="ban")
+        async def _ban(ctx, user_id: int, *, reason = "No reason given"):
             """Bans a user globally."""
             mods = list(map(int, os.getenv("mods").split()))
             if ctx.author.id in mods:
@@ -174,8 +174,8 @@ class Moderation:
             else:
                 await ctx.send(embed=Embed(color=discord.Color.red(), description="You are not a Global Moderator! Shame!"))
 
-        @bot.command()
-        async def unban(ctx, user_id: int, *, reason = "No reason given"):
+        @bot.command(name="unban")
+        async def _unban(ctx, user_id: int, *, reason = "No reason given"):
             """Unbans a user globally."""
             mods = list(map(int, os.getenv("mods").split()))
             if ctx.author.id in mods:
@@ -232,9 +232,9 @@ class Moderation:
                 await embed_message.edit(embed=embed)
             else:
                 await ctx.send(embed=Embed(color=discord.Color.red(), description="You are not a Global Moderator! Shame!"))
-            
-        @bot.command()
-        async def mban(ctx, *args, reason = "No reason given"):
+
+        @bot.command(name="mban", aliases=["multipleban"])
+        async def _mban(ctx, *args, reason = "No reason given"):
             """Bans multiple users globally."""
             mods = list(map(int, os.getenv("mods").split()))
             if ctx.author.id in mods:

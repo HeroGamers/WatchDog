@@ -6,18 +6,18 @@ class Info:
     def __init__(self,bot):
         self.bot = bot
 
-        @bot.command()
-        async def support(ctx):
+        @bot.command(name="support")
+        async def _support(ctx):
             """Get help and support regarding the bot."""
             await ctx.send("Join this server for support and other talks: https://discord.gg/eH8xS75")
 
-        @bot.command()
-        async def invite(ctx):
+        @bot.command(name="invite")
+        async def _invite(ctx):
             """How to invite the bot."""
-            await ctx.send("Invite me to your server with this link: https://discordapp.com/oauth2/authorize?scope=bot&client_id=475447317072183306&permissions=0x00000004")
+            await ctx.send("Invite me to your server with this link: <https://discordapp.com/oauth2/authorize?scope=bot&client_id=475447317072183306&permissions=0x00000004>")
 
-        @bot.command()
-        async def botinfo(ctx):
+        @bot.command(name="botinfo", aliases=["info"])
+        async def _botinfo(ctx):
             """Retrives information about the bot - GM only"""
             mods = list(map(int, os.getenv("mods").split()))
             if ctx.author.id in mods:
@@ -34,8 +34,8 @@ class Info:
             else:
                 await ctx.send(embed=Embed(color=discord.Color.red(), description="You are not a Global Moderator! Shame!"))
 
-        @bot.command()
-        async def userinfo(ctx, arg1):
+        @bot.command(name="userinfo", aliases=["whois", "lookup"])
+        async def _userinfo(ctx, arg1):
             """Gets info about a user"""
             try:
                 user = await ctx.bot.get_user_info(arg1)

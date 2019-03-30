@@ -4,8 +4,8 @@ class Fun:
     def __init__(self,bot):
         self.bot = bot
 
-        @bot.command()
-        async def fren(ctx):
+        @bot.command(name="fren")
+        async def _fren(ctx):
             """Are u fren?"""
             fren = list(map(int, os.getenv("frens").split()))
             if ctx.author.id in fren:

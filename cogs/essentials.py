@@ -6,8 +6,8 @@ class essentials:
     def __init__(self,bot):
         self.bot = bot
 
-        @bot.command()
-        async def loadcog(ctx, arg1):
+        @bot.command(name="loadcog", aliases=["loadextension"])
+        async def _loadcog(ctx, arg1):
             """Loads a cog"""
             mods = list(map(int, os.getenv("mods").split()))
             if ctx.author.id in mods:
@@ -23,8 +23,8 @@ class essentials:
             else:
                 await ctx.send(embed=Embed(color=discord.Color.red(), description="You are not a Global Moderator! Shame!"))
 
-        @bot.command()
-        async def listcogs(ctx):
+        @bot.command(name="listcogs", aliases=["cogs"])
+        async def _listcogs(ctx):
             """Lists all the cogs"""
             mods = list(map(int, os.getenv("mods").split()))
             if ctx.author.id in mods:
@@ -35,8 +35,8 @@ class essentials:
             else:
                 await ctx.send(embed=Embed(color=discord.Color.red(), description="You are not a Global Moderator! Shame!"))
 
-        @bot.command()
-        async def unloadcog(ctx, arg1):
+        @bot.command(name="unloadcog", aliases=["unloadextension"])
+        async def _unloadcog(ctx, arg1):
             """Unloads a cog"""
             mods = list(map(int, os.getenv("mods").split()))
             if ctx.author.id in mods:
