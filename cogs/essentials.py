@@ -1,16 +1,11 @@
 import discord
 from discord import Embed
-from contextlib import redirect_stdout
-import inspect
-import io
-import textwrap
-import traceback
 import os
 
 class essentials:
     def __init__(self,bot):
         self.bot = bot
-        
+
         @bot.command()
         async def loadcog(ctx, arg1):
             """Loads a cog"""

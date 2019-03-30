@@ -3,7 +3,7 @@ import os
 class Fun:
     def __init__(self,bot):
         self.bot = bot
-        
+
         @bot.command()
         async def fren(ctx):
             """Are u fren?"""

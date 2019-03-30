@@ -6,7 +6,7 @@ import os
 class Moderation:
     def __init__(self,bot):
         self.bot = bot
-        
+
         @bot.command()
         @commands.guild_only()
         @commands.bot_has_permissions(ban_members=True)
