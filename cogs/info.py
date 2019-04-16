@@ -77,6 +77,8 @@ class Info:
 
                 inguildwithbot = ""
                 for guild in bot.guilds:
+                    if inguildwithbot == "Yes": 
+                        break
                     for member in guild.members:
                         if user.id == member.id:
                             inguildwithbot = "Yes"
