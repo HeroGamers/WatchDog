@@ -314,7 +314,7 @@ class Moderation:
                                         await channel.send("**[Info]** Could not ban the user `%s` (%s) in the guild `%s` (%s)" % (user.name, user.id, guild.name, guild.id))
                         #Does the embed change
                         argCount += 1
-                        percentRaw = (argCount/argCountAll)*100
+                        percentRaw = (argCount/argCountAllWithText)*100
                         percent = round(percentRaw, 1)
                         embed = discord.Embed(title="Accounts are being banned...", color=discord.Color.green(),
                             description="%s%% complete! 👌" % percent)
