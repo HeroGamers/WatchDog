@@ -242,7 +242,6 @@ class Moderation:
                 if argCountAllWithText == 0:
                     return
                 else:
-                    argCountAll = 0
                     #Sends main embed
                     guild = []
                     argCount = 0
