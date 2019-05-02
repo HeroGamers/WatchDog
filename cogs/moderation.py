@@ -341,7 +341,7 @@ class Moderation:
                         await prvchannel.send(embed=prvembed)
                     #send final embed, telling the ban was sucessful
                     embed = discord.Embed(title="Accounts banned", color=discord.Color.green(),
-                        description="%s accounts have been globally banned 👌" % argCountAll)
+                        description="%s accounts have been globally banned 👌" % argCountAllWithText)
                     embed.set_footer(text="%s - Global WatchDog Moderator" % ctx.author.name, icon_url=ctx.author.avatar_url)
                     embed.set_image(url="https://cdn.discordapp.com/attachments/456229881064325131/475498849696219141/ban.gif")
                     await embed_message.edit(embed=embed)
