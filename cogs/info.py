@@ -1,8 +1,9 @@
 import discord
 from discord import Embed
+from discord.ext import commands
 import os
 
-class Info:
+class Info(commands.Cog):
     def __init__(self,bot):
         self.bot = bot
 

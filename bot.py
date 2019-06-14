@@ -19,7 +19,7 @@ async def on_ready():
     channel = bot.get_channel(int(os.getenv('botlog')))
     await channel.send("**[Info]** Bot startup done.")
     print("\n")
-    await bot.change_presence(game=discord.Game(name="with the banhammer"))
+    await bot.change_presence(activity=discord.Game(name="with the banhammer"))
 
 @bot.event
 async def on_command_error(ctx: commands.Context, error):
