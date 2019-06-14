@@ -111,7 +111,7 @@ class Moderation(commands.Cog):
             """Bans a user globally."""
             mods = list(map(int, os.getenv("mods").split()))
             if ctx.author.id in mods:
-                user = await ctx.bot.get_user_info(user_id)
+                user = await ctx.bot.fetch_user(user_id)
                 if user == ctx.bot.user:
                     await ctx.send(embed=Embed(color=discord.Color.red(), description="What are you trying to do? Shame!"))
                 elif user.id in mods:
@@ -182,7 +182,7 @@ class Moderation(commands.Cog):
                 #Sends main embed
                 guildCount = 0
                 guildCountAll = len(bot.guilds)
-                user = await ctx.bot.get_user_info(user_id)
+                user = await ctx.bot.fetch_user(user_id)
                 embed = discord.Embed(title="Account is being unbanned...", color=discord.Color.green(),
                     description="0% complete! 👌")
                 embed.set_footer(text="%s - Global WatchDog Moderator" % ctx.author.name, icon_url=ctx.author.avatar_url)
@@ -252,7 +252,7 @@ class Moderation(commands.Cog):
                     #ban on own guild
                     for arg in args:
                         try:
-                            user = await ctx.bot.get_user_info(arg)
+                            user = await ctx.bot.fetch_user(arg)
                         except:
                             argslist = list(args)
                             argslist.remove(arg)
@@ -284,7 +284,7 @@ class Moderation(commands.Cog):
                     #ban on all other guilds
                     for arg in args:
                         try:
-                            user = await ctx.bot.get_user_info(arg)
+                            user = await ctx.bot.get_fetch_user(arg)
                         except:
                             argslist = list(args)
                             argslist.remove(arg)

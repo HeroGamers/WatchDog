@@ -43,6 +43,7 @@ async def on_command_error(ctx: commands.Context, error):
         await ctx.send("Something went wrong while executing that command... Sorry!")
         channel = bot.get_channel(int(os.getenv('botlog')))
         await channel.send("**[ERROR]** %s" % error)
+        print("**[ERROR]** %s" % error)
 
 @bot.event
 async def on_guild_join(guild):
