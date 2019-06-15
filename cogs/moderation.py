@@ -93,7 +93,7 @@ class Moderation(commands.Cog):
                             if guild != ctx.guild:
                                 #tries to ban
                                 try:
-                                    await guild.ban(BanEntry, reason=f"WatchDog - Global Ban")
+                                    await guild.ban(BanEntry.user, reason=f"WatchDog - Global Ban")
                                 except:
                                     channel = bot.get_channel(int(os.getenv('botlogfail')))
                                     await channel.send("**[Info]** Could not revsyncban the user `%s` (%s) in the guild `%s` (%s)" % (BanEntry.user.name, BanEntry.user.id, guild.name, guild.id))
@@ -109,7 +109,7 @@ class Moderation(commands.Cog):
                     #Do this when done
                     #Sends a message in the botlog
                     channel = bot.get_channel(int(os.getenv('botlog')))
-                    await channel.send(embed=Embed(color=discord.Color.red(), description="Moderator `%s` banned `%s` - (%s)" % (ctx.author.name, BanEntry.name, BanEntry.id)))
+                    await channel.send(embed=Embed(color=discord.Color.red(), description="Moderator `%s` banned `%s` - (%s)" % (ctx.author.name, BanEntry.user.name, BanEntry.user.id)))
                     print("Moderator `%s` banned `%s` - (%s)" % (ctx.author.name, BanEntry.user.name, BanEntry.user.id))
                     #Send public ban notif in public ban list
                     pblchannel = bot.get_channel(int(os.getenv('pbanlist')))
