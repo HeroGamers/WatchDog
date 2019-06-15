@@ -32,11 +32,13 @@ class Moderation(commands.Cog):
                 banCount += 1
                 percentRaw = (banCount/banCountAll)*100
                 percent = round(percentRaw, 1)
-                embed = discord.Embed(title="Sync in progress...", color=discord.Color.green(),
-                    description="%s%% complete! 👌" % percent)
-                embed.set_footer(text=ctx.author.name, icon_url=ctx.author.avatar_url)
-                #Causes lag in embed - embed.set_image(url="https://cdn.discordapp.com/attachments/456229881064325131/485934104156569600/happysuccess.gif")
-                await embed_message.edit(embed=embed)
+                percent0 = round(percentRaw, 0)
+                if (percent0 == 25) or (percent0 == 50) or (percent0 == 75):
+                    embed = discord.Embed(title="Sync in progress...", color=discord.Color.green(),
+                        description="%s%% complete! 👌" % percent)
+                    embed.set_footer(text=ctx.author.name, icon_url=ctx.author.avatar_url)
+                    #Causes lag in embed - embed.set_image(url="https://cdn.discordapp.com/attachments/456229881064325131/485934104156569600/happysuccess.gif")
+                    await embed_message.edit(embed=embed)
             embed = discord.Embed(title="Sync complete", color=discord.Color.green(),
                 description="Synchronisation complete! 👌")
             embed.set_footer(text=ctx.author.name, icon_url=ctx.author.avatar_url)
@@ -74,10 +76,12 @@ class Moderation(commands.Cog):
                             #Does the embed change
                             percentRaw = (banCount/banCountAll)*100
                             percent = round(percentRaw, 1)
-                            embed = discord.Embed(title="Revsync in progress...", color=discord.Color.green(),
-                                description="%s%% complete! 👌" % percent)
-                            embed.set_footer(text="%s - Global WatchDog Moderator" % ctx.author.name, icon_url=ctx.author.avatar_url)
-                            await embed_message.edit(embed=embed)
+                            percent0 = round(percentRaw, 0)
+                            if (percent0 == 25) or (percent0 == 50) or (percent0 == 75):
+                                embed = discord.Embed(title="Revsync in progress...", color=discord.Color.green(),
+                                    description="%s%% complete! 👌" % percent)
+                                embed.set_footer(text="%s - Global WatchDog Moderator" % ctx.author.name, icon_url=ctx.author.avatar_url)
+                                await embed_message.edit(embed=embed)
                             banned = True
                             break
                     if banned == True:
@@ -117,10 +121,12 @@ class Moderation(commands.Cog):
                         #Does the embed change
                         percentRaw = (banCount/banCountAll)*100
                         percent = round(percentRaw, 1)
-                        embed = discord.Embed(title="Revsync in progress...", color=discord.Color.green(),
-                            description="%s%% complete! 👌" % percent)
-                        embed.set_footer(text="%s - Global WatchDog Moderator" % ctx.author.name, icon_url=ctx.author.avatar_url)
-                        await embed_message.edit(embed=embed)
+                        percent0 = round(percentRaw, 0)
+                        if (percent0 == 25) or (percent0 == 50) or (percent0 == 75):
+                            embed = discord.Embed(title="Revsync in progress...", color=discord.Color.green(),
+                                description="%s%% complete! 👌" % percent)
+                            embed.set_footer(text="%s - Global WatchDog Moderator" % ctx.author.name, icon_url=ctx.author.avatar_url)
+                            await embed_message.edit(embed=embed)
                         #Do this when done
                         #Sends a message in the botlog
                         channel = bot.get_channel(int(os.getenv('botlog')))
@@ -356,10 +362,12 @@ class Moderation(commands.Cog):
                                 #Does the embed change
                                 percentRaw = (argCount/argCountAllWithText)*100
                                 percent = round(percentRaw, 1)
-                                embed = discord.Embed(title="Accounts are being banned...", color=discord.Color.green(),
-                                    description="%s%% complete! 👌" % percent)
-                                embed.set_footer(text="%s - Global WatchDog Moderator" % ctx.author.name, icon_url=ctx.author.avatar_url)
-                                await embed_message.edit(embed=embed)
+                                percent0 = round(percentRaw, 0)
+                                if (percent0 == 25) or (percent0 == 50) or (percent0 == 75):
+                                    embed = discord.Embed(title="Accounts are being banned...", color=discord.Color.green(),
+                                        description="%s%% complete! 👌" % percent)
+                                    embed.set_footer(text="%s - Global WatchDog Moderator" % ctx.author.name, icon_url=ctx.author.avatar_url)
+                                    await embed_message.edit(embed=embed)
                                 banned = True
                                 break
                         
@@ -391,10 +399,12 @@ class Moderation(commands.Cog):
                         argCount += 1
                         percentRaw = (argCount/argCountAllWithText)*100
                         percent = round(percentRaw, 1)
-                        embed = discord.Embed(title="Accounts are being banned...", color=discord.Color.green(),
-                            description="%s%% complete! 👌" % percent)
-                        embed.set_footer(text="%s - Global WatchDog Moderator" % ctx.author.name, icon_url=ctx.author.avatar_url)
-                        await embed_message.edit(embed=embed)
+                        percent0 = round(percentRaw, 0)
+                        if (percent0 == 25) or (percent0 == 50) or (percent0 == 75):
+                            embed = discord.Embed(title="Accounts are being banned...", color=discord.Color.green(),
+                                description="%s%% complete! 👌" % percent)
+                            embed.set_footer(text="%s - Global WatchDog Moderator" % ctx.author.name, icon_url=ctx.author.avatar_url)
+                            await embed_message.edit(embed=embed)
                         #Do this when done
                         #Sends a message in the botlog
                         channel = bot.get_channel(int(os.getenv('botlog')))
