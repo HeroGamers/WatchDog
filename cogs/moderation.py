@@ -196,11 +196,13 @@ class Moderation(commands.Cog):
                         guildCount += 1
                         percentRaw = (guildCount/guildCountAll)*100
                         percent = round(percentRaw, 1)
-                        embed = discord.Embed(title="Account is being banned...", color=discord.Color.green(),
-                            description="%s%% complete! 👌" % percent)
-                        embed.set_footer(text="%s - Global WatchDog Moderator" % ctx.author.name, icon_url=ctx.author.avatar_url)
-                        #Causes lag in embed - embed.set_image(url="https://cdn.discordapp.com/attachments/456229881064325131/475498849696219141/ban.gif")
-                        await embed_message.edit(embed=embed)
+                        percent0 = round(percentRaw, 0)
+                        if (percent0 == 25) or (percent0 == 50) or (percent0 == 75):
+                            embed = discord.Embed(title="Account is being banned...", color=discord.Color.green(),
+                                description="%s%% complete! 👌" % percent)
+                            embed.set_footer(text="%s - Global WatchDog Moderator" % ctx.author.name, icon_url=ctx.author.avatar_url)
+                            #Causes lag in embed - embed.set_image(url="https://cdn.discordapp.com/attachments/456229881064325131/475498849696219141/ban.gif")
+                            await embed_message.edit(embed=embed)
                     #Do this when done
                     #Send public ban notif in public ban list
                     pblchannel = bot.get_channel(int(os.getenv('pbanlist')))
@@ -257,11 +259,13 @@ class Moderation(commands.Cog):
                     guildCount += 1
                     percentRaw = (guildCount/guildCountAll)*100
                     percent = round(percentRaw, 1)
-                    embed = discord.Embed(title="Account is being unbanned...", color=discord.Color.green(),
-                        description="%s%% complete! 👌" % percent)
-                    embed.set_footer(text="%s - Global WatchDog Moderator" % ctx.author.name, icon_url=ctx.author.avatar_url)
-                    #Causes lag in embed - embed.set_image(url="https://cdn.discordapp.com/attachments/456229881064325131/475498943178866689/unban.gif")
-                    await embed_message.edit(embed=embed)
+                    percent0 = round(percentRaw, 0)
+                    if (percent0 == 25) or (percent0 == 50) or (percent0 == 75):
+                        embed = discord.Embed(title="Account is being unbanned...", color=discord.Color.green(),
+                            description="%s%% complete! 👌" % percent)
+                        embed.set_footer(text="%s - Global WatchDog Moderator" % ctx.author.name, icon_url=ctx.author.avatar_url)
+                        #Causes lag in embed - embed.set_image(url="https://cdn.discordapp.com/attachments/456229881064325131/475498943178866689/unban.gif")
+                        await embed_message.edit(embed=embed)
                 #do this when done
                 #Send public unban notif in public ban list
                 pblchannel = bot.get_channel(int(os.getenv('pbanlist')))
