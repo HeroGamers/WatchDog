@@ -49,6 +49,8 @@ class Moderation(commands.Cog):
         async def _revsync(ctx):
             """Sync bans from server to central, and other guilds."""
             ban_list = await ctx.guild.bans()
+            banguild = bot.get_guild(int(os.getenv('banlistguild')))
+            banguild_ban_list = await banguild.bans()
             mods = list(map(int, os.getenv("mods").split()))
             if ctx.author.id in mods:
                 banCount = 0
@@ -78,13 +80,19 @@ class Moderation(commands.Cog):
                         ban_list_list.remove(BanEntry)
                         ban_list = tuple(ban_list_list)
                         continue
-                    banguild = bot.get_guild(int(os.getenv('banlistguild')))
-                    banguild_ban_list = await banguild.bans()
-                    if BanEntry in banguild_ban_list:
-                        print("User already banned, skipping")
+                    elif BanEntry in banguild_ban_list:
+                        print("User already banned, skipping" + BanEntry.user.name)
                         ban_list_list = list(ban_list)
                         ban_list_list.remove(BanEntry)
                         ban_list = tuple(ban_list_list)
+                        #Does the embed change
+                        banCount += 1
+                        percentRaw = (banCount/banCountAll)*100
+                        percent = round(percentRaw, 1)
+                        embed = discord.Embed(title="Revsync in progress...", color=discord.Color.green(),
+                            description="%s%% complete! 👌" % percent)
+                        embed.set_footer(text="%s - Global WatchDog Moderator" % ctx.author.name, icon_url=ctx.author.avatar_url)
+                        await embed_message.edit(embed=embed)
                         continue
                     else:
                         #checks other guilds
