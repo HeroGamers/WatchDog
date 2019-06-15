@@ -69,7 +69,7 @@ class Moderation(commands.Cog):
                         ban_list_list.remove(BanEntry)
                         ban_list = tuple(ban_list_list)
                         continue
-                    elif BanEntry.id in mods:
+                    elif BanEntry.user.id in mods:
                         channel = bot.get_channel(int(os.getenv('botlogfail')))
                         await channel.send("**[Alert]** Someone tried to ban a Global Moderator during a revsync. Moderator: `%s` (%s) in the guild `%s` (%s)" % (ctx.author.name, ctx.author.id, guild.name, guild.id))
                         print("**[Alert]** Someone tried to ban a Global Moderator during a revsync. Moderator: `%s` (%s) in the guild `%s` (%s)" % (ctx.author.name, ctx.author.id, guild.name, guild.id))
@@ -110,24 +110,24 @@ class Moderation(commands.Cog):
                     #Sends a message in the botlog
                     channel = bot.get_channel(int(os.getenv('botlog')))
                     await channel.send(embed=Embed(color=discord.Color.red(), description="Moderator `%s` banned `%s` - (%s)" % (ctx.author.name, BanEntry.name, BanEntry.id)))
-                    print("Moderator `%s` banned `%s` - (%s)" % (ctx.author.name, BanEntry.name, BanEntry.id))
+                    print("Moderator `%s` banned `%s` - (%s)" % (ctx.author.name, BanEntry.user.name, BanEntry.user.id))
                     #Send public ban notif in public ban list
                     pblchannel = bot.get_channel(int(os.getenv('pbanlist')))
                     pblembed = discord.Embed(title="Account banned", color=discord.Color.red(),
-                        description="`%s` has been globally banned" % BanEntry.id)
-                    pblembed.set_footer(text="%s has been globally banned" % BanEntry, icon_url="https://cdn.discordapp.com/attachments/456229881064325131/489102109363666954/366902409508814848.png")
-                    pblembed.set_thumbnail(url=BanEntry.avatar_url)
+                        description="`%s` has been globally banned" % BanEntry.user.id)
+                    pblembed.set_footer(text="%s has been globally banned" % BanEntry.user, icon_url="https://cdn.discordapp.com/attachments/456229881064325131/489102109363666954/366902409508814848.png")
+                    pblembed.set_thumbnail(url=BanEntry.user.avatar_url)
                     await pblchannel.send(embed=pblembed)
                     #Send private ban notif in private moderator ban list
                     prvchannel = bot.get_channel(int(os.getenv('prvbanlist')))
                     prvembed = discord.Embed(title="Account banned", color=discord.Color.red(),
-                        description="`%s` has been globally banned" % BanEntry.id)
+                        description="`%s` has been globally banned" % BanEntry.user.id)
                     prvembed.add_field(name="Moderator", value="%s (`%s`)" % (ctx.author.name, ctx.author.id), inline=True)
-                    prvembed.add_field(name="Name when banned", value="%s" % BanEntry, inline=True)
+                    prvembed.add_field(name="Name when banned", value="%s" % BanEntry.user, inline=True)
                     prvembed.add_field(name="In server", value="%s (`%s`)" % (ctx.guild.name, ctx.guild.id), inline=True)
                     prvembed.add_field(name="In channel", value="%s (`%s`)" % (ctx.channel.name, ctx.channel.id), inline=True)
-                    prvembed.set_footer(text="%s has been globally banned" % BanEntry, icon_url="https://cdn.discordapp.com/attachments/456229881064325131/489102109363666954/366902409508814848.png")
-                    prvembed.set_thumbnail(url=BanEntry.avatar_url)
+                    prvembed.set_footer(text="%s has been globally banned" % BanEntry.user, icon_url="https://cdn.discordapp.com/attachments/456229881064325131/489102109363666954/366902409508814848.png")
+                    prvembed.set_thumbnail(url=BanEntry.user.avatar_url)
                     await prvchannel.send(embed=prvembed)
                 #send final embed, telling the ban was sucessful
                 embed = discord.Embed(title="Revsync complete", color=discord.Color.green(),
