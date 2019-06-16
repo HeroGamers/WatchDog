@@ -39,13 +39,13 @@ class Info(commands.Cog):
         async def _userinfo(ctx, arg1):
             """Gets info about a user"""
             try:
-                user = await ctx.bot.get_user_info(arg1)
+                user = await ctx.bot.fetch_user(arg1)
             except:
                 try:
-                    user = await ctx.bot.get_user_info(ctx.message.mentions[0].id)
+                    user = await ctx.bot.fetch_user(ctx.message.mentions[0].id)
                 except:
                     try:
-                        user = await ctx.bot.get_user_info(ctx.message.mentions[0].id)
+                        user = await ctx.bot.fetch_user(ctx.message.mentions[0].id)
                     except:
                         try:
                             user = discord.utils.get(ctx.message.guild.members, name=arg1)
