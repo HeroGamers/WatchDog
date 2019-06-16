@@ -360,14 +360,14 @@ class Moderation(commands.Cog):
                         for BanEntry in banguild_ban_list:
                             if BanEntry.user.id == user.id:
                                 print("User already banned, skipping - " + BanEntry.user.name)
-                                ban_list_list = list(ban_list)
-                                ban_list_list.remove(BanEntry)
-                                ban_list = tuple(ban_list_list)
+                                argslist = list(args)
+                                argslist.remove(arg)
+                                args = tuple(argslist)
                                 #Does the embed change
                                 percentRaw = (argCount/argCountAllWithText)*100
                                 percent = round(percentRaw, 1)
                                 percent0 = round(percentRaw, 0)
-                                if (percent0 == 25) or (percent0 == 50) or (percent0 == 75):
+                                if (percent0 == 10) or (percent0 == 25) or (percent0 == 50) or (percent0 == 75):
                                     embed = discord.Embed(title="Accounts are being banned...", color=discord.Color.green(),
                                         description="%s%% complete! 👌" % percent)
                                     embed.set_footer(text="%s - Global WatchDog Moderator" % ctx.author.name, icon_url=ctx.author.avatar_url)
