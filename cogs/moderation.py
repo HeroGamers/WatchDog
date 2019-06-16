@@ -404,7 +404,7 @@ class Moderation(commands.Cog):
                         percentRaw = (argCount/argCountAllWithText)*100
                         percent = round(percentRaw, 1)
                         percent0 = round(percentRaw, 0)
-                        if (percent0 == 25) or (percent0 == 50) or (percent0 == 75):
+                        if (percent0 == 10) or (percent0 == 25) or (percent0 == 50) or (percent0 == 75):
                             embed = discord.Embed(title="Accounts are being banned...", color=discord.Color.green(),
                                 description="%s%% complete! 👌" % percent)
                             embed.set_footer(text="%s - Global WatchDog Moderator" % ctx.author.name, icon_url=ctx.author.avatar_url)
@@ -434,7 +434,7 @@ class Moderation(commands.Cog):
                         await prvchannel.send(embed=prvembed)
                     #send final embed, telling the ban was sucessful
                     embed = discord.Embed(title="Accounts banned", color=discord.Color.green(),
-                        description="%s accounts have been globally banned 👌" % len(argslist))
+                        description="%s accounts have been globally banned 👌" % len(args))
                     embed.set_footer(text="%s - Global WatchDog Moderator" % ctx.author.name, icon_url=ctx.author.avatar_url)
                     embed.set_image(url="https://cdn.discordapp.com/attachments/456229881064325131/475498849696219141/ban.gif")
                     await embed_message.edit(embed=embed)
