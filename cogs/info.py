@@ -64,19 +64,18 @@ class Info(commands.Cog):
                 embed.set_footer(text="Userinfo requested by %s" % ctx.author.name, icon_url=ctx.author.avatar_url)
                 embed_message = await ctx.send(embed=embed)
 
-                banned = ""
+                banned = "No"
                 banguild = bot.get_guild(int(os.getenv('banlistguild')))
                 ban_list = await banguild.bans()
                 for BanEntry in ban_list:
                     if user == BanEntry.user:
                         banned = "Yes"
                         break
-                    else:
-                        banned = "No"
+
                 embed.set_field_at(index=2, name="Banned:", value="%s" % banned, inline=True)
                 await embed_message.edit(embed=embed)
 
-                inguildwithbot = ""
+                inguildwithbot = "No"
                 for guild in bot.guilds:
                     if inguildwithbot == "Yes":
                         break
@@ -84,8 +83,7 @@ class Info(commands.Cog):
                         if user.id == member.id:
                             inguildwithbot = "Yes"
                             break
-                        else:
-                            inguildwithbot = "No"
+
                 if inguildwithbot == "Yes":
                     status = "Unknown"
                     if str(member.status) == "dnd":
@@ -103,6 +101,7 @@ class Info(commands.Cog):
                     else:
                         status = "Unknown"
                     embed.add_field(name="Status:", value="%s" % status, inline=True)
+
                 embed.set_field_at(index=3, name="In guild with bot:", value="%s" % inguildwithbot, inline=True)
                 await embed_message.edit(embed=embed)
 
