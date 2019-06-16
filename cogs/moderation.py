@@ -88,8 +88,8 @@ class Moderation(commands.Cog):
                         continue
                     elif BanEntry.user == ctx.bot.user:
                         channel = bot.get_channel(int(os.getenv('botlogfail')))
-                        await channel.send("**[Alert]** Someone tried to ban the bot during a revsync. Moderator: `%s` (%s) in the guild `%s` (%s)" % (ctx.author.name, ctx.author.id, guild.name, guild.id))
-                        print("**[Alert]** Someone tried to ban the bot during a revsync. Moderator: `%s` (%s) in the guild `%s` (%s)" % (ctx.author.name, ctx.author.id, guild.name, guild.id))
+                        await channel.send("**[Alert]** Someone tried to ban the bot during a revsync. Moderator: `%s` (%s) in the guild `%s` (%s)" % (ctx.author.name, ctx.author.id, ctx.guild.name, ctx.guild.id))
+                        print("**[Alert]** Someone tried to ban the bot during a revsync. Moderator: `%s` (%s) in the guild `%s` (%s)" % (ctx.author.name, ctx.author.id, ctx.guild.name, ctx.guild.id))
                         
                         ban_list_list = list(ban_list)
                         ban_list_list.remove(BanEntry)
@@ -97,8 +97,8 @@ class Moderation(commands.Cog):
                         continue
                     elif BanEntry.user.id in mods:
                         channel = bot.get_channel(int(os.getenv('botlogfail')))
-                        await channel.send("**[Alert]** Someone tried to ban a Global Moderator during a revsync. Moderator: `%s` (%s) in the guild `%s` (%s)" % (ctx.author.name, ctx.author.id, guild.name, guild.id))
-                        print("**[Alert]** Someone tried to ban a Global Moderator during a revsync. Moderator: `%s` (%s) in the guild `%s` (%s)" % (ctx.author.name, ctx.author.id, guild.name, guild.id))
+                        await channel.send("**[Alert]** Someone tried to ban a Global Moderator during a revsync. Moderator: `%s` (%s) in the guild `%s` (%s)" % (ctx.author.name, ctx.author.id, ctx.guild.name, ctx.guild.id))
+                        print("**[Alert]** Someone tried to ban a Global Moderator during a revsync. Moderator: `%s` (%s) in the guild `%s` (%s)" % (ctx.author.name, ctx.author.id, ctx.guild.name, ctx.guild.id))
                         
                         ban_list_list = list(ban_list)
                         ban_list_list.remove(BanEntry)
@@ -164,70 +164,83 @@ class Moderation(commands.Cog):
             """Bans a user globally."""
             mods = list(map(int, os.getenv("mods").split()))
             if ctx.author.id in mods:
+                banguild = bot.get_guild(int(os.getenv('banlistguild')))
+                banguild_ban_list = await banguild.bans()
                 user = await ctx.bot.fetch_user(user_id)
                 if user == ctx.bot.user:
                     await ctx.send(embed=Embed(color=discord.Color.red(), description="What are you trying to do? Shame!"))
                 elif user.id in mods:
                     await ctx.send(embed=Embed(color=discord.Color.red(), description="You cannot ban a Global Moderator, sorry!"))
                 else:
-                    #Sends main embed
-                    guild = []
-                    guildCount = 0
-                    guildCountAll = len(bot.guilds)
-                    embed = discord.Embed(title="Account is being banned...", color=discord.Color.green(),
-                        description="0% complete! 👌")
-                    embed.set_footer(text="%s - Global WatchDog Moderator" % ctx.author.name, icon_url=ctx.author.avatar_url)
-                    #Causes lag in embed - embed.set_image(url="https://cdn.discordapp.com/attachments/456229881064325131/475498849696219141/ban.gif")
-                    embed_message = await ctx.send(embed=embed)
-                    #Sends a message in the botlog
-                    channel = bot.get_channel(int(os.getenv('botlog')))
-                    await channel.send(embed=Embed(color=discord.Color.red(), description="Moderator `%s` banned `%s` - (%s)" % (ctx.author.name, user.name, user.id)))
-                    print("Moderator `%s` banned `%s` - (%s)" % (ctx.author.name, user.name, user.id))
-                    #checks guilds
-                    for guild in bot.guilds:
-                        #tries to ban
-                        try:
-                            await guild.ban(user, reason=f"WatchDog - Global Ban")
-                        except:
-                            channel = bot.get_channel(int(os.getenv('botlogfail')))
-                            await channel.send("**[Info]** Could not ban the user `%s` (%s) in the guild `%s` (%s)" % (user.name, user.id, guild.name, guild.id))
-                            print("**[Info]** Could not ban the user `%s` (%s) in the guild `%s` (%s)" % (user.name, user.id, guild.name, guild.id))
-                        #Does the embed change
-                        guildCount += 1
-                        percentRaw = (guildCount/guildCountAll)*100
-                        percent = round(percentRaw, 1)
-                        percent0 = round(percentRaw, 0)
-                        if (percent0 == 25) or (percent0 == 50) or (percent0 == 75):
-                            embed = discord.Embed(title="Account is being banned...", color=discord.Color.green(),
-                                description="%s%% complete! 👌" % percent)
-                            embed.set_footer(text="%s - Global WatchDog Moderator" % ctx.author.name, icon_url=ctx.author.avatar_url)
-                            #Causes lag in embed - embed.set_image(url="https://cdn.discordapp.com/attachments/456229881064325131/475498849696219141/ban.gif")
-                            await embed_message.edit(embed=embed)
-                    #Do this when done
-                    #Send public ban notif in public ban list
-                    pblchannel = bot.get_channel(int(os.getenv('pbanlist')))
-                    pblembed = discord.Embed(title="Account banned", color=discord.Color.red(),
-                        description="`%s` has been globally banned" % user.id)
-                    pblembed.set_footer(text="%s has been globally banned" % user, icon_url="https://cdn.discordapp.com/attachments/456229881064325131/489102109363666954/366902409508814848.png")
-                    pblembed.set_thumbnail(url=user.avatar_url)
-                    await pblchannel.send(embed=pblembed)
-                    #Send private ban notif in private moderator ban list
-                    prvchannel = bot.get_channel(int(os.getenv('prvbanlist')))
-                    prvembed = discord.Embed(title="Account banned", color=discord.Color.red(),
-                        description="`%s` has been globally banned" % user.id)
-                    prvembed.add_field(name="Moderator", value="%s (`%s`)" % (ctx.author.name, ctx.author.id), inline=True)
-                    prvembed.add_field(name="Name when banned", value="%s" % user, inline=True)
-                    prvembed.add_field(name="In server", value="%s (`%s`)" % (ctx.guild.name, ctx.guild.id), inline=True)
-                    prvembed.add_field(name="In channel", value="%s (`%s`)" % (ctx.channel.name, ctx.channel.id), inline=True)
-                    prvembed.set_footer(text="%s has been globally banned" % user, icon_url="https://cdn.discordapp.com/attachments/456229881064325131/489102109363666954/366902409508814848.png")
-                    prvembed.set_thumbnail(url=user.avatar_url)
-                    await prvchannel.send(embed=prvembed)
-                    #send final embed, telling the ban was sucessful
-                    embed = discord.Embed(title="Account banned", color=discord.Color.green(),
-                        description="`%s` has been globally banned 👌" % user)
-                    embed.set_footer(text="%s - Global WatchDog Moderator" % ctx.author.name, icon_url=ctx.author.avatar_url)
-                    embed.set_image(url="https://cdn.discordapp.com/attachments/456229881064325131/475498849696219141/ban.gif")
-                    await embed_message.edit(embed=embed)
+                    banned = False
+
+                    for BanEntry in banguild_ban_list:
+                        if BanEntry.user.id == user.id:
+                            print("User already banned, skipping - " + BanEntry.user.name)
+                            banned = True
+                            break
+                    
+                    if banned == True:
+                        await ctx.send(embed=Embed(color=discord.Color.red(), description="That user has already been banned!"))
+                    else:
+                        #Sends main embed
+                        guild = []
+                        guildCount = 0
+                        guildCountAll = len(bot.guilds)
+                        embed = discord.Embed(title="Account is being banned...", color=discord.Color.green(),
+                            description="0% complete! 👌")
+                        embed.set_footer(text="%s - Global WatchDog Moderator" % ctx.author.name, icon_url=ctx.author.avatar_url)
+                        #Causes lag in embed - embed.set_image(url="https://cdn.discordapp.com/attachments/456229881064325131/475498849696219141/ban.gif")
+                        embed_message = await ctx.send(embed=embed)
+                        #Sends a message in the botlog
+                        channel = bot.get_channel(int(os.getenv('botlog')))
+                        await channel.send(embed=Embed(color=discord.Color.red(), description="Moderator `%s` banned `%s` - (%s)" % (ctx.author.name, user.name, user.id)))
+                        print("Moderator `%s` banned `%s` - (%s)" % (ctx.author.name, user.name, user.id))
+                        #checks guilds
+                        for guild in bot.guilds:
+                            #tries to ban
+                            try:
+                                await guild.ban(user, reason=f"WatchDog - Global Ban")
+                            except:
+                                channel = bot.get_channel(int(os.getenv('botlogfail')))
+                                await channel.send("**[Info]** Could not ban the user `%s` (%s) in the guild `%s` (%s)" % (user.name, user.id, guild.name, guild.id))
+                                print("**[Info]** Could not ban the user `%s` (%s) in the guild `%s` (%s)" % (user.name, user.id, guild.name, guild.id))
+                            #Does the embed change
+                            guildCount += 1
+                            percentRaw = (guildCount/guildCountAll)*100
+                            percent = round(percentRaw, 1)
+                            percent0 = round(percentRaw, 0)
+                            if (percent0 == 25) or (percent0 == 50) or (percent0 == 75):
+                                embed = discord.Embed(title="Account is being banned...", color=discord.Color.green(),
+                                    description="%s%% complete! 👌" % percent)
+                                embed.set_footer(text="%s - Global WatchDog Moderator" % ctx.author.name, icon_url=ctx.author.avatar_url)
+                                #Causes lag in embed - embed.set_image(url="https://cdn.discordapp.com/attachments/456229881064325131/475498849696219141/ban.gif")
+                                await embed_message.edit(embed=embed)
+                        #Do this when done
+                        #Send public ban notif in public ban list
+                        pblchannel = bot.get_channel(int(os.getenv('pbanlist')))
+                        pblembed = discord.Embed(title="Account banned", color=discord.Color.red(),
+                            description="`%s` has been globally banned" % user.id)
+                        pblembed.set_footer(text="%s has been globally banned" % user, icon_url="https://cdn.discordapp.com/attachments/456229881064325131/489102109363666954/366902409508814848.png")
+                        pblembed.set_thumbnail(url=user.avatar_url)
+                        await pblchannel.send(embed=pblembed)
+                        #Send private ban notif in private moderator ban list
+                        prvchannel = bot.get_channel(int(os.getenv('prvbanlist')))
+                        prvembed = discord.Embed(title="Account banned", color=discord.Color.red(),
+                            description="`%s` has been globally banned" % user.id)
+                        prvembed.add_field(name="Moderator", value="%s (`%s`)" % (ctx.author.name, ctx.author.id), inline=True)
+                        prvembed.add_field(name="Name when banned", value="%s" % user, inline=True)
+                        prvembed.add_field(name="In server", value="%s (`%s`)" % (ctx.guild.name, ctx.guild.id), inline=True)
+                        prvembed.add_field(name="In channel", value="%s (`%s`)" % (ctx.channel.name, ctx.channel.id), inline=True)
+                        prvembed.set_footer(text="%s has been globally banned" % user, icon_url="https://cdn.discordapp.com/attachments/456229881064325131/489102109363666954/366902409508814848.png")
+                        prvembed.set_thumbnail(url=user.avatar_url)
+                        await prvchannel.send(embed=prvembed)
+                        #send final embed, telling the ban was sucessful
+                        embed = discord.Embed(title="Account banned", color=discord.Color.green(),
+                            description="`%s` has been globally banned 👌" % user)
+                        embed.set_footer(text="%s - Global WatchDog Moderator" % ctx.author.name, icon_url=ctx.author.avatar_url)
+                        embed.set_image(url="https://cdn.discordapp.com/attachments/456229881064325131/475498849696219141/ban.gif")
+                        await embed_message.edit(embed=embed)
             else:
                 await ctx.send(embed=Embed(color=discord.Color.red(), description="You are not a Global Moderator! Shame!"))
 
@@ -301,8 +314,11 @@ class Moderation(commands.Cog):
             if ctx.author.id in mods:
                 banguild = bot.get_guild(int(os.getenv('banlistguild')))
                 banguild_ban_list = await banguild.bans()
-                argCountAllWithText = len(args)
-                if argCountAllWithText == 0:
+                # remove dupes
+                args = list(dict.fromkeys(args))
+                # count args
+                argCountAll = len(args)
+                if argCountAll == 0:
                     return
                 else:
                     #Sends main embed
@@ -364,7 +380,7 @@ class Moderation(commands.Cog):
                                 argslist.remove(arg)
                                 args = tuple(argslist)
                                 #Does the embed change
-                                percentRaw = (argCount/argCountAllWithText)*100
+                                percentRaw = (argCount/argCountAll)*100
                                 percent = round(percentRaw, 1)
                                 percent0 = round(percentRaw, 0)
                                 if (percent0 == 10) or (percent0 == 25) or (percent0 == 50) or (percent0 == 75):
@@ -374,7 +390,7 @@ class Moderation(commands.Cog):
                                     await embed_message.edit(embed=embed)
                                 banned = True
                                 break
-                        
+
                         if banned == True:
                             argCount += 1
                             continue
@@ -404,7 +420,7 @@ class Moderation(commands.Cog):
                                         print("**[Info]** Could not ban the user `%s` (%s) in the guild `%s` (%s)" % (user.name, user.id, guild.name, guild.id))
                             #Does the embed change
                             argCount += 1
-                            percentRaw = (argCount/argCountAllWithText)*100
+                            percentRaw = (argCount/argCountAll)*100
                             percent = round(percentRaw, 1)
                             percent0 = round(percentRaw, 0)
                             if (percent0 == 10) or (percent0 == 25) or (percent0 == 50) or (percent0 == 75):
