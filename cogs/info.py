@@ -1,7 +1,6 @@
 import discord
 from discord import Embed
 from discord.ext import commands
-from Util import logging
 import os
 
 class Info(commands.Cog):

@@ -170,7 +170,7 @@ class Moderation(commands.Cog):
                             logging.logDebug("User already banned, skipping - " + BanEntry.user.name)
                             banned = True
                             break
-                    
+
                     if banned == True:
                         await ctx.send(embed=Embed(color=discord.Color.red(), description="That user has already been banned!"))
                     else:
