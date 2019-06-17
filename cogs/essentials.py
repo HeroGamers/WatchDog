@@ -29,7 +29,7 @@ class essentials(commands.Cog):
             mods = list(map(int, os.getenv("mods").split()))
             if ctx.author.id in mods:
                 embed = discord.Embed(title="Cogs", color=discord.Color.green(),
-                    description="`essentials, fun, info, moderation, test`")
+                    description="`essentials, info, moderation, test`")
                 embed.set_footer(text=ctx.author.name, icon_url=ctx.author.avatar_url)
                 await ctx.send(embed=embed)
             else:

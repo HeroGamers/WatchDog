@@ -1,16 +1,22 @@
 import discord
 from discord import Embed
 from discord.ext import commands
+from Util import logging
 import os
 
 class Info(commands.Cog):
     def __init__(self,bot):
         self.bot = bot
 
+        @bot.command(name="code", aliases=["source", "sourcecode"])
+        async def _code(ctx):
+            """View and/or help with the source code of WatchDog."""
+            await ctx.send("The source code for WatchDog can be found here: https://github.com/Fido2603/WatchDog")
+
         @bot.command(name="support")
         async def _support(ctx):
             """Get help and support regarding the bot."""
-            await ctx.send("Join this server for support and other talks: https://discord.gg/eH8xS75")
+            await ctx.send("The forest where WatchDog roams, Treeland: https://discord.gg/PvFPEfd")
 
         @bot.command(name="invite")
         async def _invite(ctx):
@@ -40,16 +46,20 @@ class Info(commands.Cog):
             """Gets info about a user"""
             try:
                 user = await ctx.bot.fetch_user(arg1)
-            except:
+            except Exception as e:
+                logging.logDebug("User not found! - %s" % e)
                 try:
                     user = await ctx.bot.fetch_user(ctx.message.mentions[0].id)
-                except:
+                except Exception as e:
+                    logging.logDebug("User not found! - %s" % e)
                     try:
                         user = await ctx.bot.fetch_user(ctx.message.mentions[0].id)
-                    except:
+                    except Exception as e:
+                        logging.logDebug("User not found! - %s" % e)
                         try:
                             user = discord.utils.get(ctx.message.guild.members, name=arg1)
-                        except:
+                        except Exception as e:
+                            logging.logDebug("User not found! - %s" % e)
                             await ctx.send("User not found!")
             if user is None:
                 await ctx.send("User not found!")

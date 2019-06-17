@@ -123,13 +123,6 @@ class Moderation(commands.Cog):
                         #Do this when done
                         #Sends a message in the botlog
                         await logging.logEmbed(discord.Color.red(), "Moderator `%s` banned `%s` - (%s)" % (ctx.author.name, BanEntry.user.name, BanEntry.user.id), bot, str(banCount) + "/" + str(banCountAll) + " Moderator `%s` banned `%s` - (%s)" % (ctx.author.name, BanEntry.user.name, BanEntry.user.id))
-                        #Send public ban notif in public ban list
-                        pblchannel = bot.get_channel(int(os.getenv('pbanlist')))
-                        pblembed = discord.Embed(title="Account banned", color=discord.Color.red(),
-                            description="`%s` has been globally banned" % BanEntry.user.id)
-                        pblembed.set_footer(text="%s has been globally banned" % BanEntry.user, icon_url="https://cdn.discordapp.com/attachments/456229881064325131/489102109363666954/366902409508814848.png")
-                        pblembed.set_thumbnail(url=BanEntry.user.avatar_url)
-                        await pblchannel.send(embed=pblembed)
                         #Send private ban notif in private moderator ban list
                         prvchannel = bot.get_channel(int(os.getenv('prvbanlist')))
                         prvembed = discord.Embed(title="Account banned", color=discord.Color.red(),
@@ -142,8 +135,13 @@ class Moderation(commands.Cog):
                         prvembed.set_thumbnail(url=BanEntry.user.avatar_url)
                         await prvchannel.send(embed=prvembed)
                 #send final embed, telling the ban was sucessful
+                if len(ban_list) == 1:
+                    desc_string = "Reverse synchronisation complete! %s account has been globally banned 👌" % len(ban_list)
+                else:
+                    desc_string = "Reverse synchronisation complete! %s accounts have been globally banned 👌" % len(ban_list)
+
                 embed = discord.Embed(title="Revsync complete", color=discord.Color.green(),
-                    description="Reverse synchronisation complete! %s accounts have been globally banned 👌" % len(ban_list))
+                    description=desc_string)
                 embed.set_footer(text="%s - Global WatchDog Moderator" % ctx.author.name, icon_url=ctx.author.avatar_url)
                 embed.set_image(url="https://cdn.discordapp.com/attachments/485619099481800714/485917795679338496/1521567278_980x.gif")
                 await embed_message.edit(embed=embed)
@@ -184,9 +182,7 @@ class Moderation(commands.Cog):
                         #Causes lag in embed - embed.set_image(url="https://cdn.discordapp.com/attachments/456229881064325131/475498849696219141/ban.gif")
                         embed_message = await ctx.send(embed=embed)
                         #Sends a message in the botlog
-                        channel = bot.get_channel(int(os.getenv('botlog')))
-                        await channel.send(embed=Embed(color=discord.Color.red(), description="Moderator `%s` banned `%s` - (%s)" % (ctx.author.name, user.name, user.id)))
-                        logging.logDebug("Moderator `%s` banned `%s` - (%s)" % (ctx.author.name, user.name, user.id))
+                        await logging.logEmbed(discord.Color.red(), "Moderator `%s` banned `%s` - (%s)" % (ctx.author.name, user.name, user.id), bot)
                         #checks guilds
                         for guild in bot.guilds:
                             #tries to ban
@@ -206,13 +202,6 @@ class Moderation(commands.Cog):
                                 #Causes lag in embed - embed.set_image(url="https://cdn.discordapp.com/attachments/456229881064325131/475498849696219141/ban.gif")
                                 await embed_message.edit(embed=embed)
                         #Do this when done
-                        #Send public ban notif in public ban list
-                        pblchannel = bot.get_channel(int(os.getenv('pbanlist')))
-                        pblembed = discord.Embed(title="Account banned", color=discord.Color.red(),
-                            description="`%s` has been globally banned" % user.id)
-                        pblembed.set_footer(text="%s has been globally banned" % user, icon_url="https://cdn.discordapp.com/attachments/456229881064325131/489102109363666954/366902409508814848.png")
-                        pblembed.set_thumbnail(url=user.avatar_url)
-                        await pblchannel.send(embed=pblembed)
                         #Send private ban notif in private moderator ban list
                         prvchannel = bot.get_channel(int(os.getenv('prvbanlist')))
                         prvembed = discord.Embed(title="Account banned", color=discord.Color.red(),
@@ -265,13 +254,6 @@ class Moderation(commands.Cog):
                         #Causes lag in embed - embed.set_image(url="https://cdn.discordapp.com/attachments/456229881064325131/475498943178866689/unban.gif")
                         await embed_message.edit(embed=embed)
                 #do this when done
-                #Send public unban notif in public ban list
-                pblchannel = bot.get_channel(int(os.getenv('pbanlist')))
-                pblembed = discord.Embed(title="Account unbanned", color=discord.Color.green(),
-                    description="`%s` has been globally unbanned" % user.id)
-                pblembed.set_footer(text="%s has been globally unbanned" % user, icon_url="https://cdn.discordapp.com/attachments/456229881064325131/489102109363666954/366902409508814848.png")
-                pblembed.set_thumbnail(url=user.avatar_url)
-                await pblchannel.send(embed=pblembed)
                 #Send private ban notif in private moderator ban list
                 prvchannel = bot.get_channel(int(os.getenv('prvbanlist')))
                 prvembed = discord.Embed(title="Account unbanned", color=discord.Color.green(),
@@ -397,8 +379,8 @@ class Moderation(commands.Cog):
                                     #tries to ban
                                     try:
                                         await guild.ban(user, reason=f"WatchDog - Global Ban")
-                                    except:
-                                        await logging.log("**[Fail/Info]** Could not ban the user `%s` (%s) in the guild `%s` (%s)" % (user.name, user.id, guild.name, guild.id), bot)
+                                    except Exception as e:
+                                        await logging.log("**[Fail/Info]** Could not ban the user `%s` (%s) in the guild `%s` (%s) - %s" % (user.name, user.id, guild.name, guild.id, e), bot)
                             #Does the embed change
                             argCount += 1
                             percentRaw = (argCount/argCountAll)*100
@@ -412,13 +394,6 @@ class Moderation(commands.Cog):
                             #Do this when done
                             #Sends a message in the botlog
                             await logging.log("Moderator `%s` banned `%s` - (%s)" % (ctx.author.name, user.name, user.id), bot)
-                            #Send public ban notif in public ban list
-                            pblchannel = bot.get_channel(int(os.getenv('pbanlist')))
-                            pblembed = discord.Embed(title="Account banned", color=discord.Color.red(),
-                                description="`%s` has been globally banned" % user.id)
-                            pblembed.set_footer(text="%s has been globally banned" % user, icon_url="https://cdn.discordapp.com/attachments/456229881064325131/489102109363666954/366902409508814848.png")
-                            pblembed.set_thumbnail(url=user.avatar_url)
-                            await pblchannel.send(embed=pblembed)
                             #Send private ban notif in private moderator ban list
                             prvchannel = bot.get_channel(int(os.getenv('prvbanlist')))
                             prvembed = discord.Embed(title="Account banned", color=discord.Color.red(),
@@ -431,8 +406,13 @@ class Moderation(commands.Cog):
                             prvembed.set_thumbnail(url=user.avatar_url)
                             await prvchannel.send(embed=prvembed)
                     #send final embed, telling the ban was sucessful
+                    if len(args) == 1:
+                        desc_string = "%s account has been globally banned 👌" % len(args)
+                    else:
+                        desc_string = "%s accounts have been globally banned 👌" % len(args)
+
                     embed = discord.Embed(title="Accounts banned", color=discord.Color.green(),
-                        description="%s accounts have been globally banned 👌" % len(args))
+                        description=desc_string)
                     embed.set_footer(text="%s - Global WatchDog Moderator" % ctx.author.name, icon_url=ctx.author.avatar_url)
                     embed.set_image(url="https://cdn.discordapp.com/attachments/456229881064325131/475498849696219141/ban.gif")
                     await embed_message.edit(embed=embed)
