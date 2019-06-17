@@ -1,6 +1,7 @@
 import discord
 from discord import Embed
 from discord.ext import commands
+from Util import logging
 import os
 
 class Test(commands.Cog):
@@ -32,6 +33,7 @@ class Test(commands.Cog):
                     await ctx.send(embed=embed)
                     channel = bot.get_channel(int(os.getenv('botlog')))
                     await channel.send(embed=Embed(color=discord.Color.red(), description="Moderator `%s` banned `%s` - (%s)" % (ctx.author.name, user.name, user.id)))
+                    logging.logDebug("Moderator `%s` banned `%s` - (%s)" % (ctx.author.name, user.name, user.id))
                     #Send public ban notif in public ban list
                     pblchannel = bot.get_channel(int(os.getenv('pbanlist')))
                     pblembed = discord.Embed(title="Account banned", color=discord.Color.red(),
@@ -66,6 +68,7 @@ class Test(commands.Cog):
                 await ctx.send(embed=embed)
                 channel = bot.get_channel(int(os.getenv('botlog')))
                 await channel.send(embed=Embed(color=discord.Color.green(), description="Moderator `%s` unbanned `%s` - (%s)" % (ctx.author.name, user.name, user.id)))
+                logging.logDebug("Moderator `%s` unbanned `%s` - (%s)" % (ctx.author.name, user.name, user.id))
                 #Send public unban notif in public ban list
                 pblchannel = bot.get_channel(int(os.getenv('pbanlist')))
                 pblembed = discord.Embed(title="Account unbanned", color=discord.Color.green(),
@@ -149,6 +152,7 @@ class Test(commands.Cog):
                             #Sends a message in the botlog
                             channel = bot.get_channel(int(os.getenv('botlog')))
                             await channel.send(embed=Embed(color=discord.Color.red(), description="Moderator `%s` banned `%s` - (%s)" % (ctx.author.name, user.name, user.id)))
+                            logging.logDebug("Moderator `%s` banned `%s` - (%s)" % (ctx.author.name, user.name, user.id))
                     #ban on all other guilds
                     for arg in args:
                         try:

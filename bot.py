@@ -1,6 +1,7 @@
 import discord
 from discord.ext import commands
 from discord import Embed
+from Util import logging
 import os
 try:
     import config
@@ -15,9 +16,7 @@ startup_extensions = ["essentials",
 
 @bot.event
 async def on_ready():
-    print("[Info] Bot startup done.")
-    channel = bot.get_channel(int(os.getenv('botlog')))
-    await channel.send("**[Info]** Bot startup done.")
+    await logging.log("**[Info]** Bot startup done.", bot)
     print("\n")
     await bot.change_presence(activity=discord.Game(name="with the banhammer"))
 
@@ -41,15 +40,11 @@ async def on_command_error(ctx: commands.Context, error):
         return
     else:
         await ctx.send("Something went wrong while executing that command... Sorry!")
-        channel = bot.get_channel(int(os.getenv('botlog')))
-        await channel.send("**[ERROR]** %s" % error)
-        print("**[ERROR]** %s" % error)
+        await logging.log("**[ERROR]** %s" % error, bot)
 
 @bot.event
 async def on_guild_join(guild):
-    channel = bot.get_channel(int(os.getenv('botlog')))
-    print("[Info] Joined a new guild (`%s` - `%s`)" % (guild.name, guild.id))
-    await channel.send("**[Info]** Joined a new guild (`%s` - `%s`)" % (guild.name, guild.id))
+    await logging.log("**[Info]** Joined a new guild (`%s` - `%s`)" % (guild.name, guild.id), bot)
     banguild = bot.get_guild(int(os.getenv('banlistguild')))
     ban_list = await banguild.bans()
     for BanEntry in ban_list:
@@ -62,9 +57,7 @@ async def on_message(message:discord.Message):
     ctx:commands.Context = await bot.get_context(message)
     if message.content.startswith(os.getenv('prefix')):
         if ctx.command is not None:
-            print("[Command] %s (%s) just used the %s command in the guild %s (%s)" % (ctx.author.name, ctx.author.id, ctx.invoked_with, ctx.guild.name, ctx.guild.id))
-            channel = bot.get_channel(int(os.getenv('botlog')))
-            await channel.send("**[Command]** `%s` (%s) used the `%s` command in the guild `%s` (%s), in the channel `%s` (%s)" % (ctx.author.name, ctx.author.id, ctx.invoked_with, ctx.guild.name, ctx.guild.id, ctx.channel.name, ctx.channel.id))
+            await logging.log("**[Command]** `%s` (%s) used the `%s` command in the guild `%s` (%s), in the channel `%s` (%s)" % (ctx.author.name, ctx.author.id, ctx.invoked_with, ctx.guild.name, ctx.guild.id, ctx.channel.name, ctx.channel.id), bot)
             await bot.invoke(ctx)
     else:
         return
@@ -74,6 +67,6 @@ if __name__ == '__main__':
         try:
             bot.load_extension(f"cogs.{extension}")
         except Exception as e:
-            print(f"[ERROR] Failed to load extension {extension}.", e)
+            logging.logDebug(f"[ERROR] Failed to load extension {extension}. - {e}")
 
 bot.run(os.getenv('token'))
