@@ -17,18 +17,36 @@ def setup_logger():
     logger = logging.getLogger("watchdog")
     logger.addHandler(handler)
     logger.addHandler(screen_handler)
-    logger.setLevel(logging.INFO)
+    logger.setLevel(logging.DEBUG)
 
 async def log(message, bot, level="INFO", debug=""):
+    if (os.getenv('debugEnabled') == "False") and (level == "DEBUG"):
+        return
+
     channel = bot.get_channel(int(os.getenv('botlog')))
-    st = datetime.datetime.now().strftime('%H:%M:%S')
-    await channel.send("`[" + st + "]` **[" + level + "]** " + message)
+    time = datetime.datetime.now().strftime('%H:%M:%S')
+
+    if level == "DEBUG":
+        levelemote = "🔧"
+    elif level == "ERROR":
+        levelemote = "❌"
+    elif level == "WARNING":
+        levelemote = "❗"
+    elif level == "CRITICAL":
+        levelemote = "🔥"
+    else:
+        levelemote = "🔎"
+
+    await channel.send("`[" + time + "]` **" + levelemote + " " + level + ":** " + message)
     if debug == "":
         logDebug(message, level)
         return
     logDebug(debug, level)
 
 def logDebug(message, level="INFO"):
+    if (os.getenv('debugEnabled') == "False") and (level == "DEBUG"):
+        return
+
     logger = logging.getLogger("watchdog")
     if level == "DEBUG":
         logger.debug(message)

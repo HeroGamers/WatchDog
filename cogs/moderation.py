@@ -32,7 +32,9 @@ class Moderation(commands.Cog):
                 percentRaw = (banCount/banCountAll)*100
                 percent = round(percentRaw, 1)
                 percent0 = round(percentRaw, 0)
-                if (percent0 == 25) or (percent0 == 50) or (percent0 == 75):
+                logger.logDebug("Percent: " + percent + " - Percent0: " + percent0, "DEBUG")
+                if (percent0 == 10) or (percent0 == 25) or (percent0 == 50) or (percent0 == 75):
+                    logger.logDebug("Embed update triggered, percent: " + percent, "DEBUG")
                     embed = discord.Embed(title="Sync in progress...", color=discord.Color.green(),
                         description="%s%% complete! 👌" % percent)
                     embed.set_footer(text=ctx.author.name, icon_url=ctx.author.avatar_url)
@@ -68,7 +70,7 @@ class Moderation(commands.Cog):
                     for BanEntry2 in banguild_ban_list:
                         if BanEntry2.user.id == BanEntry.user.id:
                             banCount += 1
-                            logger.logDebug(str(banCount) + "/" + str(banCountAll) + " User already banned, skipping - " + BanEntry.user.name)
+                            logger.logDebug(str(banCount) + "/" + str(banCountAll) + " User already banned, skipping - " + BanEntry.user.name, "DEBUG")
                             ban_list_list = list(ban_list)
                             ban_list_list.remove(BanEntry)
                             ban_list = tuple(ban_list_list)
@@ -76,7 +78,9 @@ class Moderation(commands.Cog):
                             percentRaw = (banCount/banCountAll)*100
                             percent = round(percentRaw, 1)
                             percent0 = round(percentRaw, 0)
-                            if (percent0 == 25) or (percent0 == 50) or (percent0 == 75):
+                            logger.logDebug("Percent: " + percent + " - Percent0: " + percent0, "DEBUG")
+                            if (percent0 == 10) or (percent0 == 25) or (percent0 == 50) or (percent0 == 75):
+                                logger.logDebug("Embed update triggered, percent: " + percent, "DEBUG")
                                 embed = discord.Embed(title="Revsync in progress...", color=discord.Color.green(),
                                     description="%s%% complete! 👌" % percent)
                                 embed.set_footer(text="%s - Global WatchDog Moderator" % ctx.author.name, icon_url=ctx.author.avatar_url)
@@ -101,7 +105,7 @@ class Moderation(commands.Cog):
                         continue
                     else:
                         banCount += 1
-                        logger.logDebug(str(banCount) + "/" + str(banCountAll) + " User not banned, banning - " + BanEntry.user.name)
+                        logger.logDebug(str(banCount) + "/" + str(banCountAll) + " User not banned, banning - " + BanEntry.user.name, "DEBUG")
                         #checks other guilds
                         for guild in bot.guilds:
                             #checks if own guild, if it is, skip
@@ -115,7 +119,9 @@ class Moderation(commands.Cog):
                         percentRaw = (banCount/banCountAll)*100
                         percent = round(percentRaw, 1)
                         percent0 = round(percentRaw, 0)
-                        if (percent0 == 25) or (percent0 == 50) or (percent0 == 75):
+                        logger.logDebug("Percent: " + percent + " - Percent0: " + percent0, "DEBUG")
+                        if (percent0 == 10) or (percent0 == 25) or (percent0 == 50) or (percent0 == 75):
+                            logger.logDebug("Embed update triggered, percent: " + percent, "DEBUG")
                             embed = discord.Embed(title="Revsync in progress...", color=discord.Color.green(),
                                 description="%s%% complete! 👌" % percent)
                             embed.set_footer(text="%s - Global WatchDog Moderator" % ctx.author.name, icon_url=ctx.author.avatar_url)
@@ -195,7 +201,9 @@ class Moderation(commands.Cog):
                             percentRaw = (guildCount/guildCountAll)*100
                             percent = round(percentRaw, 1)
                             percent0 = round(percentRaw, 0)
-                            if (percent0 == 25) or (percent0 == 50) or (percent0 == 75):
+                            logger.logDebug("Percent: " + percent + " - Percent0: " + percent0, "DEBUG")
+                            if (percent0 == 10) or (percent0 == 25) or (percent0 == 50) or (percent0 == 75):
+                                logger.logDebug("Embed update triggered, percent: " + percent, "DEBUG")
                                 embed = discord.Embed(title="Account is being banned...", color=discord.Color.green(),
                                     description="%s%% complete! 👌" % percent)
                                 embed.set_footer(text="%s - Global WatchDog Moderator" % ctx.author.name, icon_url=ctx.author.avatar_url)
@@ -247,7 +255,9 @@ class Moderation(commands.Cog):
                     percentRaw = (guildCount/guildCountAll)*100
                     percent = round(percentRaw, 1)
                     percent0 = round(percentRaw, 0)
-                    if (percent0 == 25) or (percent0 == 50) or (percent0 == 75):
+                    logger.logDebug("Percent: " + percent + " - Percent0: " + percent0, "DEBUG")
+                    if (percent0 == 10) or (percent0 == 25) or (percent0 == 50) or (percent0 == 75):
+                        logger.logDebug("Embed update triggered, percent: " + percent, "DEBUG")
                         embed = discord.Embed(title="Account is being unbanned...", color=discord.Color.green(),
                             description="%s%% complete! 👌" % percent)
                         embed.set_footer(text="%s - Global WatchDog Moderator" % ctx.author.name, icon_url=ctx.author.avatar_url)
@@ -300,7 +310,7 @@ class Moderation(commands.Cog):
                         try:
                             user = await ctx.bot.fetch_user(arg)
                         except:
-                            logger.logDebug("User not fetched, removing from args: " + arg)
+                            logger.logDebug("User not fetched, removing from args: " + arg, "DEBUG")
                             argslist = list(args)
                             argslist.remove(arg)
                             args = tuple(argslist)
@@ -330,7 +340,7 @@ class Moderation(commands.Cog):
                             user = await ctx.bot.fetch_user(arg)
                         except:
                             argCount += 1
-                            logger.logDebug("User not fetched, removing from args")
+                            logger.logDebug("User not fetched, removing from args", "DEBUG")
                             argslist = list(args)
                             argslist.remove(arg)
                             args = tuple(argslist)
@@ -340,7 +350,7 @@ class Moderation(commands.Cog):
 
                         for BanEntry in banguild_ban_list:
                             if BanEntry.user.id == user.id:
-                                logger.logDebug("User already banned, skipping - " + BanEntry.user.name)
+                                logger.logDebug("User already banned, skipping - " + BanEntry.user.name, "DEBUG")
                                 argslist = list(args)
                                 argslist.remove(arg)
                                 args = tuple(argslist)
@@ -348,6 +358,7 @@ class Moderation(commands.Cog):
                                 percentRaw = (argCount/argCountAll)*100
                                 percent = round(percentRaw, 1)
                                 percent0 = round(percentRaw, 0)
+                                logger.logDebug("Percent: " + percent + " - Percent0: " + percent0, "DEBUG")
                                 if (percent0 == 10) or (percent0 == 25) or (percent0 == 50) or (percent0 == 75):
                                     embed = discord.Embed(title="Accounts are being banned...", color=discord.Color.green(),
                                         description="%s%% complete! 👌" % percent)
@@ -386,7 +397,9 @@ class Moderation(commands.Cog):
                             percentRaw = (argCount/argCountAll)*100
                             percent = round(percentRaw, 1)
                             percent0 = round(percentRaw, 0)
+                            logger.logDebug("Percent: " + percent + " - Percent0: " + percent0, "DEBUG")
                             if (percent0 == 10) or (percent0 == 25) or (percent0 == 50) or (percent0 == 75):
+                                logger.logDebug("Embed update triggered, percent: " + percent, "DEBUG")
                                 embed = discord.Embed(title="Accounts are being banned...", color=discord.Color.green(),
                                     description="%s%% complete! 👌" % percent)
                                 embed.set_footer(text="%s - Global WatchDog Moderator" % ctx.author.name, icon_url=ctx.author.avatar_url)
