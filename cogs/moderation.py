@@ -32,9 +32,9 @@ class Moderation(commands.Cog):
                 percentRaw = (banCount/banCountAll)*100
                 percent = round(percentRaw, 1)
                 percent0 = round(percentRaw, 0)
-                logger.logDebug("Percent: " + percent + " - Percent0: " + percent0, "DEBUG")
+                logger.logDebug("Percent: " + str(percent0) + " - Percent0: " + str(percent0), "DEBUG")
                 if (percent0 == 10) or (percent0 == 25) or (percent0 == 50) or (percent0 == 75):
-                    logger.logDebug("Embed update triggered, percent: " + percent, "DEBUG")
+                    logger.logDebug("Embed update triggered, percent: " + str(percent), "DEBUG")
                     embed = discord.Embed(title="Sync in progress...", color=discord.Color.green(),
                         description="%s%% complete! 👌" % percent)
                     embed.set_footer(text=ctx.author.name, icon_url=ctx.author.avatar_url)
@@ -78,9 +78,9 @@ class Moderation(commands.Cog):
                             percentRaw = (banCount/banCountAll)*100
                             percent = round(percentRaw, 1)
                             percent0 = round(percentRaw, 0)
-                            logger.logDebug("Percent: " + percent + " - Percent0: " + percent0, "DEBUG")
+                            logger.logDebug("Percent: " + str(percent0) + " - Percent0: " + str(percent0), "DEBUG")
                             if (percent0 == 10) or (percent0 == 25) or (percent0 == 50) or (percent0 == 75):
-                                logger.logDebug("Embed update triggered, percent: " + percent, "DEBUG")
+                                logger.logDebug("Embed update triggered, percent: " + str(percent), "DEBUG")
                                 embed = discord.Embed(title="Revsync in progress...", color=discord.Color.green(),
                                     description="%s%% complete! 👌" % percent)
                                 embed.set_footer(text="%s - Global WatchDog Moderator" % ctx.author.name, icon_url=ctx.author.avatar_url)
@@ -119,9 +119,9 @@ class Moderation(commands.Cog):
                         percentRaw = (banCount/banCountAll)*100
                         percent = round(percentRaw, 1)
                         percent0 = round(percentRaw, 0)
-                        logger.logDebug("Percent: " + percent + " - Percent0: " + percent0, "DEBUG")
+                        logger.logDebug("Percent: " + str(percent0) + " - Percent0: " + str(percent0), "DEBUG")
                         if (percent0 == 10) or (percent0 == 25) or (percent0 == 50) or (percent0 == 75):
-                            logger.logDebug("Embed update triggered, percent: " + percent, "DEBUG")
+                            logger.logDebug("Embed update triggered, percent: " + str(percent), "DEBUG")
                             embed = discord.Embed(title="Revsync in progress...", color=discord.Color.green(),
                                 description="%s%% complete! 👌" % percent)
                             embed.set_footer(text="%s - Global WatchDog Moderator" % ctx.author.name, icon_url=ctx.author.avatar_url)
@@ -201,9 +201,9 @@ class Moderation(commands.Cog):
                             percentRaw = (guildCount/guildCountAll)*100
                             percent = round(percentRaw, 1)
                             percent0 = round(percentRaw, 0)
-                            logger.logDebug("Percent: " + percent + " - Percent0: " + percent0, "DEBUG")
+                            logger.logDebug("Percent: " + str(percent0) + " - Percent0: " + str(percent0), "DEBUG")
                             if (percent0 == 10) or (percent0 == 25) or (percent0 == 50) or (percent0 == 75):
-                                logger.logDebug("Embed update triggered, percent: " + percent, "DEBUG")
+                                logger.logDebug("Embed update triggered, percent: " + str(percent), "DEBUG")
                                 embed = discord.Embed(title="Account is being banned...", color=discord.Color.green(),
                                     description="%s%% complete! 👌" % percent)
                                 embed.set_footer(text="%s - Global WatchDog Moderator" % ctx.author.name, icon_url=ctx.author.avatar_url)
@@ -255,9 +255,9 @@ class Moderation(commands.Cog):
                     percentRaw = (guildCount/guildCountAll)*100
                     percent = round(percentRaw, 1)
                     percent0 = round(percentRaw, 0)
-                    logger.logDebug("Percent: " + percent + " - Percent0: " + percent0, "DEBUG")
+                    logger.logDebug("Percent: " + str(percent0) + " - Percent0: " + str(percent0), "DEBUG")
                     if (percent0 == 10) or (percent0 == 25) or (percent0 == 50) or (percent0 == 75):
-                        logger.logDebug("Embed update triggered, percent: " + percent, "DEBUG")
+                        logger.logDebug("Embed update triggered, percent: " + str(percent), "DEBUG")
                         embed = discord.Embed(title="Account is being unbanned...", color=discord.Color.green(),
                             description="%s%% complete! 👌" % percent)
                         embed.set_footer(text="%s - Global WatchDog Moderator" % ctx.author.name, icon_url=ctx.author.avatar_url)
@@ -358,7 +358,7 @@ class Moderation(commands.Cog):
                                 percentRaw = (argCount/argCountAll)*100
                                 percent = round(percentRaw, 1)
                                 percent0 = round(percentRaw, 0)
-                                logger.logDebug("Percent: " + percent + " - Percent0: " + percent0, "DEBUG")
+                                logger.logDebug("Percent: " + str(percent0) + " - Percent0: " + str(percent0), "DEBUG")
                                 if (percent0 == 10) or (percent0 == 25) or (percent0 == 50) or (percent0 == 75):
                                     embed = discord.Embed(title="Accounts are being banned...", color=discord.Color.green(),
                                         description="%s%% complete! 👌" % percent)
@@ -397,9 +397,9 @@ class Moderation(commands.Cog):
                             percentRaw = (argCount/argCountAll)*100
                             percent = round(percentRaw, 1)
                             percent0 = round(percentRaw, 0)
-                            logger.logDebug("Percent: " + percent + " - Percent0: " + percent0, "DEBUG")
+                            logger.logDebug("Percent: " + str(percent0) + " - Percent0: " + str(percent0), "DEBUG")
                             if (percent0 == 10) or (percent0 == 25) or (percent0 == 50) or (percent0 == 75):
-                                logger.logDebug("Embed update triggered, percent: " + percent, "DEBUG")
+                                logger.logDebug("Embed update triggered, percent: " + str(percent), "DEBUG")
                                 embed = discord.Embed(title="Accounts are being banned...", color=discord.Color.green(),
                                     description="%s%% complete! 👌" % percent)
                                 embed.set_footer(text="%s - Global WatchDog Moderator" % ctx.author.name, icon_url=ctx.author.avatar_url)
