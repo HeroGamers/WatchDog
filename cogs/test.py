@@ -1,7 +1,7 @@
 import discord
 from discord import Embed
 from discord.ext import commands
-from Util import logging
+from Util import logger
 import os
 
 class Test(commands.Cog):
@@ -33,7 +33,7 @@ class Test(commands.Cog):
                     await ctx.send(embed=embed)
                     channel = bot.get_channel(int(os.getenv('botlog')))
                     await channel.send(embed=Embed(color=discord.Color.red(), description="Moderator `%s` banned `%s` - (%s)" % (ctx.author.name, user.name, user.id)))
-                    logging.logDebug("Moderator `%s` banned `%s` - (%s)" % (ctx.author.name, user.name, user.id))
+                    logger.logDebug("Moderator `%s` banned `%s` - (%s)" % (ctx.author.name, user.name, user.id))
                     #Send private ban notif in private moderator ban list
                     prvchannel = bot.get_channel(int(os.getenv('prvbanlist')))
                     prvembed = discord.Embed(title="Account banned", color=discord.Color.red(),
@@ -61,7 +61,7 @@ class Test(commands.Cog):
                 await ctx.send(embed=embed)
                 channel = bot.get_channel(int(os.getenv('botlog')))
                 await channel.send(embed=Embed(color=discord.Color.green(), description="Moderator `%s` unbanned `%s` - (%s)" % (ctx.author.name, user.name, user.id)))
-                logging.logDebug("Moderator `%s` unbanned `%s` - (%s)" % (ctx.author.name, user.name, user.id))
+                logger.logDebug("Moderator `%s` unbanned `%s` - (%s)" % (ctx.author.name, user.name, user.id))
             else:
                 await ctx.send(embed=Embed(color=discord.Color.red(), description="You are not a Global Moderator! Shame!"))
 
@@ -115,7 +115,7 @@ class Test(commands.Cog):
                             #Sends a message in the botlog
                             channel = bot.get_channel(int(os.getenv('botlog')))
                             await channel.send(embed=Embed(color=discord.Color.red(), description="Moderator `%s` banned `%s` - (%s)" % (ctx.author.name, user.name, user.id)))
-                            logging.logDebug("Moderator `%s` banned `%s` - (%s)" % (ctx.author.name, user.name, user.id))
+                            logger.logDebug("Moderator `%s` banned `%s` - (%s)" % (ctx.author.name, user.name, user.id))
                     #ban on all other guilds
                     for arg in args:
                         try:
@@ -145,7 +145,7 @@ class Test(commands.Cog):
                                         await ctx.send("wowie, %s just got testbanned in %s" % (user.name, guild.name))
                                         #await guild.ban(user, reason=f"WatchDog - Global Ban")
                                     except Exception as e:
-                                        await logging.log("**[Info]** Could not ban the user `%s` (%s) in the guild `%s` (%s) - %s" % (user.name, user.id, guild.name, guild.id, e), bot)
+                                        await logger.log("Could not ban the user `%s` (%s) in the guild `%s` (%s) - %s" % (user.name, user.id, guild.name, guild.id, e), bot, "INFO")
                         #Does the embed change
                         argCount += 1
                         percentRaw = (argCount/argCountAll)*100

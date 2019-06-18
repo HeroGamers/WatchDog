@@ -1,7 +1,7 @@
 import discord
 from discord import Embed
 from discord.ext import commands
-from Util import logging
+from Util import logger
 import os
 
 class Info(commands.Cog):
@@ -47,19 +47,19 @@ class Info(commands.Cog):
             try:
                 user = await ctx.bot.fetch_user(arg1)
             except Exception as e:
-                logging.logDebug("User not found! - %s" % e)
+                logger.logDebug("User not found! - %s" % e)
                 try:
                     user = await ctx.bot.fetch_user(ctx.message.mentions[0].id)
                 except Exception as e:
-                    logging.logDebug("User not found! - %s" % e)
+                    logger.logDebug("User not found! - %s" % e)
                     try:
                         user = await ctx.bot.fetch_user(ctx.message.mentions[0].id)
                     except Exception as e:
-                        logging.logDebug("User not found! - %s" % e)
+                        logger.logDebug("User not found! - %s" % e)
                         try:
                             user = discord.utils.get(ctx.message.guild.members, name=arg1)
                         except Exception as e:
-                            logging.logDebug("User not found! - %s" % e)
+                            logger.logDebug("User not found! - %s" % e)
                             await ctx.send("User not found!")
             if user is None:
                 await ctx.send("User not found!")

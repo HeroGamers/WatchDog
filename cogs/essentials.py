@@ -1,7 +1,7 @@
 import discord
 from discord import Embed
 from discord.ext import commands
-from Util import logging
+from Util import logger
 import os
 
 class essentials(commands.Cog):
@@ -16,10 +16,10 @@ class essentials(commands.Cog):
                 try:
                     bot.load_extension(f"cogs.{arg1}")
                     await ctx.send(f"Successfully loaded the {arg1} extension")
-                    await logging.log("**[Info]** Moderator `%s` loaded the extension %s" % (ctx.author.name, arg1), bot)
+                    await logger.log("Moderator `%s` loaded the extension %s" % (ctx.author.name, arg1), bot, "INFO")
                 except Exception as e:
                     await ctx.send(f"Failed to load the extension {arg1}")
-                    await logging.log(f"**[ERROR]** Failed to load the extension {arg1} - {e}", bot)
+                    await logger.log(f"Failed to load the extension {arg1} - {e}", bot, "ERROR")
             else:
                 await ctx.send(embed=Embed(color=discord.Color.red(), description="You are not a Global Moderator! Shame!"))
 
@@ -43,10 +43,10 @@ class essentials(commands.Cog):
                 try:
                     bot.unload_extension(f"cogs.{arg1}")
                     await ctx.send(f"Successfully unloaded the {arg1} extension")
-                    await logging.log("**[Info]** Moderator `%s` unloaded the extension %s" % (ctx.author.name, arg1), bot)
+                    await logger.log("Moderator `%s` unloaded the extension %s" % (ctx.author.name, arg1), bot, "INFO")
                 except Exception as e:
                     await ctx.send(f"Failed to unload the extension {arg1}")
-                    await logging.log(f"**[ERROR]** Failed to unload the extension {arg1} - {e}", bot)
+                    await logger.log(f"Failed to unload the extension {arg1} - {e}", bot, "ERROR")
             else:
                 await ctx.send(embed=Embed(color=discord.Color.red(), description="You are not a Global Moderator! Shame!"))
 
