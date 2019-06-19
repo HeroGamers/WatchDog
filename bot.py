@@ -48,8 +48,25 @@ async def on_guild_join(guild):
     await logger.log("Joined a new guild (`%s` - `%s`)" % (guild.name, guild.id), bot, "INFO")
     banguild = bot.get_guild(int(os.getenv('banlistguild')))
     ban_list = await banguild.bans()
+    sucess = "True"
+    sucessedbans = 0
+    banned = 0
+    bans = len(ban_list)
     for BanEntry in ban_list:
-        await guild.ban(BanEntry.user, reason=f"WatchDog - Global Ban")
+        if (banned == 5) and (sucessedbans == 0):
+            await logger.log("Could not syncban the first 5 accounts in the guild `%s` (%s). Stopping sync." % (guild.name, guild.id), bot, "INFO")
+            break
+        try:
+            await guild.ban(BanEntry.user, reason=f"WatchDog - Global Ban")
+            sucess = "True"
+            sucessedbans += 1
+        except Exception as e:
+            logger.logDebug("Could not syncban the user `%s` (%s) in the guild `%s` (%s) - %s" % (BanEntry.user.name, str(BanEntry.user.id), guild.name, str(guild.id), e), "INFO")
+            sucess = "False"
+        banned += 1
+        logger.logDebug(str(banned) + "/" + str(bans) + " Syncbanned (new guild join) the user `%s` (%s) - Sucess: %s" % (BanEntry.user.name, str(BanEntry.user.id), sucess), "DEBUG")
+    await logger.log("Synced all bans to the guild `%s` (%s)!" % (guild.name, guild.id), bot, "INFO")
+    logger.logDebug("Sucessfully banned " + str(sucessedbans) + "/" + str(bans) + " accounts, in the guild %s (%s)" % (guild.name, str(guild.id)), "DEBUG")
 
 @bot.event
 async def on_message(message:discord.Message):

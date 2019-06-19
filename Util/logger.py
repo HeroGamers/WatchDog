@@ -9,7 +9,7 @@ def setup_logger():
         os.makedirs("logs")
 
     formatter = logging.Formatter(fmt='%(asctime)s %(levelname)-8s %(message)s', datefmt='%H:%M:%S')
-    handler = TimedRotatingFileHandler("logs/watchdog.log", when="midnight", interval=1)
+    handler = TimedRotatingFileHandler("logs/watchdog.log", when="midnight", interval=1, encoding="UTF-8")
     handler.suffix = "%Y%m%d"
     handler.setFormatter(formatter)
     screen_handler = logging.StreamHandler(stream=sys.stdout)
