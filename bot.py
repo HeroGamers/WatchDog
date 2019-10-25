@@ -18,6 +18,8 @@ startup_extensions = ["essentials",
 async def on_ready():
     logger.setup_logger()
     await logger.log("Bot startup done.", bot, "INFO")
+    if os.getenv('testModeEnabled') == "True":
+        await logger.log("TESTMODE IS ENABLED! MODERATION ACTIONS WILL NOT HAVE ANY EFFECT!", bot, "DEBUG")
     print("\n")
     await bot.change_presence(activity=discord.Game(name="with the banhammer"))
 

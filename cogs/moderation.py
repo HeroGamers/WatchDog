@@ -8,6 +8,26 @@ class Moderation(commands.Cog):
     def __init__(self,bot):
         self.bot = bot
 
+        async def getUser(ctx, arg):
+            if arg.startswith("<@") and arg.endswith(">"):
+                userid = arg.replace("<@", "").replace(">", "").replace("!", "")  # fuck you nicknames
+            else:
+                userid = arg
+
+            try:
+                user = await ctx.bot.fetch_user(userid)
+            except Exception as e:
+                logger.logDebug("User not found! ID method - %s" % e)
+                try:
+                    user = discord.utils.get(ctx.message.guild.members, name=arg)
+                except Exception as e:
+                    logger.logDebug("User not found! Name method - %s" % e)
+            if user is not None:
+                logger.logDebug("User found! - %s" % user.name)
+                return user
+            else:
+                raise Exception("User not found!")
+
         @bot.command(name="sync")
         @commands.guild_only()
         @commands.bot_has_permissions(ban_members=True)
@@ -209,7 +229,7 @@ class Moderation(commands.Cog):
                 await ctx.send(embed=Embed(color=discord.Color.red(), description="You are not a Global Moderator! Shame!"))
 
         @bot.command(name="ban")
-        async def _ban(ctx, user_id: int, *, reason = "No reason given"):
+        async def _ban(ctx, arg1, *, reason = "No reason given"):
             """Bans a user globally."""
             mods = list(map(int, os.getenv("mods").split()))
             if ctx.author.id in mods:
@@ -217,7 +237,12 @@ class Moderation(commands.Cog):
                     await logger.log("TestMode seems enabled.. ignores ban functions. Check the console/script logs for the full debugging logs!", bot, "DEBUG")
                 banguild = bot.get_guild(int(os.getenv('banlistguild')))
                 banguild_ban_list = await banguild.bans()
-                user = await ctx.bot.fetch_user(user_id)
+                try:
+                    user = await getUser(ctx, arg1)
+                except Exception as e:
+                    await ctx.send(embed=Embed(color=discord.Color.red(), description="Specified user not found!"))
+                    await logger.log("Could not get a specified user - Specified arg: %s - Error: %s" % (arg1, e), bot, "ERROR")
+                    return
                 if user == ctx.bot.user:
                     await ctx.send(embed=Embed(color=discord.Color.red(), description="What are you trying to do? Shame!"))
                 elif user.id in mods:
@@ -301,7 +326,7 @@ class Moderation(commands.Cog):
                 await ctx.send(embed=Embed(color=discord.Color.red(), description="You are not a Global Moderator! Shame!"))
 
         @bot.command(name="unban")
-        async def _unban(ctx, user_id: int, *, reason = "No reason given"):
+        async def _unban(ctx, arg1, *, reason = "No reason given"):
             """Unbans a user globally."""
             mods = list(map(int, os.getenv("mods").split()))
             if ctx.author.id in mods:
@@ -316,7 +341,12 @@ class Moderation(commands.Cog):
                 percent4 = round((round((guildCountAll/5*4), 0)/(guildCountAll)*100), 1)
                 logger.logDebug("PercentageChecks: " + str(percent1) + ", " + str(percent2) + ", " + str(percent3) + ", " + str(percent4))
                 messagepercentage = 0
-                user = await ctx.bot.fetch_user(user_id)
+                try:
+                    user = await getUser(ctx, arg1)
+                except Exception as e:
+                    await ctx.send(embed=Embed(color=discord.Color.red(), description="Specified user not found!"))
+                    await logger.log("Could not get a specified user - Specified arg: %s - Error: %s" % (arg1, e), bot, "ERROR")
+                    return
                 embed = discord.Embed(title="Account is being unbanned...", color=discord.Color.green(),
                     description="0% complete! 👌")
                 embed.set_footer(text="%s - Global WatchDog Moderator" % ctx.author.name, icon_url=ctx.author.avatar_url)
@@ -402,7 +432,7 @@ class Moderation(commands.Cog):
                     #ban on own guild
                     for arg in args:
                         try:
-                            user = await ctx.bot.fetch_user(arg)
+                            user = await getUser(ctx, arg)
                         except:
                             logger.logDebug("User not fetched, removing from args: " + arg, "DEBUG")
                             argslist = list(args)
