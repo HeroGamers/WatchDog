@@ -4,8 +4,11 @@ from discord.ext import commands
 from Util import logger
 import os
 
+from database import isModerator
+
+
 class Info(commands.Cog):
-    def __init__(self,bot):
+    def __init__(self, bot):
         self.bot = bot
 
         @bot.command(name="code", aliases=["source", "sourcecode"])
@@ -21,25 +24,30 @@ class Info(commands.Cog):
         @bot.command(name="invite")
         async def _invite(ctx):
             """How to invite the bot."""
-            await ctx.send("Invite me to your server with this link: <https://discordapp.com/oauth2/authorize?scope=bot&client_id=475447317072183306&permissions=0x00000004>")
+            await ctx.send(
+                "Invite me to your server with this link: <https://discordapp.com/oauth2/authorize?scope=bot&client_id=475447317072183306&permissions=0x00000004>")
 
         @bot.command(name="botinfo", aliases=["info"])
         async def _botinfo(ctx):
             """Retrives information about the bot - GM only"""
-            mods = list(map(int, os.getenv("mods").split()))
-            if ctx.author.id in mods:
+            if isModerator(ctx.author.id):
                 embed = discord.Embed(title="Bot Information", color=discord.Color.green(),
-                    description="")
-                embed.add_field(name="Creation Date", value="%s" % discord.utils.snowflake_time(ctx.bot.user.id).strftime("%Y-%m-%d %H:%M:%S"), inline=True)
+                                      description="")
+                embed.add_field(name="Creation Date",
+                                value="%s" % discord.utils.snowflake_time(ctx.bot.user.id).strftime(
+                                    "%Y-%m-%d %H:%M:%S"), inline=True)
                 embed.add_field(name="Guilds", value="%s" % len(bot.guilds), inline=True)
                 ban_list = await ctx.guild.bans()
                 embed.add_field(name="Global Bans", value="%s" % len(ban_list), inline=True)
-                embed.add_field(name="Central Server", value=bot.get_guild(int(os.getenv('banlistguild'))).name, inline=True)
-                #embed.add_field(name="Log channel", value="<#%s>" % bot.get_channel(int(os.getenv('botlog'))).id, inline=True)
-                embed.set_footer(text="%s - Global WatchDog Moderator" % ctx.author.name, icon_url=ctx.author.avatar_url)
+                embed.add_field(name="Central Server", value=bot.get_guild(int(os.getenv('banlistguild'))).name,
+                                inline=True)
+                # embed.add_field(name="Log channel", value="<#%s>" % bot.get_channel(int(os.getenv('botlog'))).id, inline=True)
+                embed.set_footer(text="%s - Global WatchDog Moderator" % ctx.author.name,
+                                 icon_url=ctx.author.avatar_url)
                 await ctx.send(embed=embed)
             else:
-                await ctx.send(embed=Embed(color=discord.Color.red(), description="You are not a Global Moderator! Shame!"))
+                await ctx.send(
+                    embed=Embed(color=discord.Color.red(), description="You are not a Global Moderator! Shame!"))
 
         @bot.command(name="userinfo", aliases=["whois", "lookup"])
         async def _userinfo(ctx, arg1):
@@ -65,9 +73,11 @@ class Info(commands.Cog):
                 await ctx.send("User not found!")
             else:
                 embed = discord.Embed(title="User Information", color=discord.Color.green(),
-                    description="DiscordTag: %s#%s" % (user.name, user.discriminator))
+                                      description="DiscordTag: %s#%s" % (user.name, user.discriminator))
                 embed.add_field(name="ID:", value="%s" % user.id, inline=True)
-                embed.add_field(name="Created at:", value="%s" % discord.utils.snowflake_time(user.id).strftime("%Y-%m-%d %H:%M:%S"), inline=True)
+                embed.add_field(name="Created at:",
+                                value="%s" % discord.utils.snowflake_time(user.id).strftime("%Y-%m-%d %H:%M:%S"),
+                                inline=True)
                 embed.add_field(name="Banned:", value="Pending...", inline=True)
                 embed.add_field(name="In guild with bot:", value="Pending...", inline=True)
                 embed.set_thumbnail(url=user.avatar_url)
@@ -114,6 +124,7 @@ class Info(commands.Cog):
 
                 embed.set_field_at(index=3, name="In guild with bot:", value="%s" % inguildwithbot, inline=True)
                 await embed_message.edit(embed=embed)
+
 
 def setup(bot):
     bot.add_cog(Info(bot))
