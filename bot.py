@@ -29,7 +29,7 @@ async def updateDatabase():
     ban_list = await banguild.bans()
     for BanEntry in ban_list:
         if not database.isBanned(BanEntry.user.id):
-            database.newBan(userid=BanEntry.user.id, discordtag=BanEntry.user.name + BanEntry.user.discriminator,
+            database.newBan(userid=BanEntry.user.id, discordtag=BanEntry.user.name + "#" + BanEntry.user.discriminator,
                             avatarurl=BanEntry.user.avatar_url)
 
 
