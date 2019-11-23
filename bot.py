@@ -42,16 +42,21 @@ async def on_ready():
     logger.logDebug("     Username: " + bot.user.name, "INFO")
     logger.logDebug("     UserID:   " + str(bot.user.id), "INFO")
     logger.logDebug("--------------------------------------", "INFO")
-    await logger.log("Bot startup done.", bot, "INFO", "Bot startup done.\n")
-    await bot.change_presence(activity=discord.Game(name="with the banhammer"))
+    print("\n")
 
     if os.getenv('testModeEnabled') == "True":
         await logger.log("TESTMODE IS ENABLED! MODERATION ACTIONS WILL NOT HAVE ANY EFFECT!", bot, "DEBUG")
     else:
+        logger.logDebug("Updating the bans in the database!", "INFO")
         await updateDatabase()
+        logger.logDebug("Done updating bans!", "INFO")
     print("\n")
 
     # Ban appeal server setup
+
+    # Bot done starting up
+    await logger.log("Bot startup done.", bot, "INFO", "Bot startup done.\n")
+    await bot.change_presence(activity=discord.Game(name="with the banhammer"))
 
 
 @bot.event
