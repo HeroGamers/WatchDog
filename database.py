@@ -126,7 +126,7 @@ def addBanAppealReason(userid, reason):
 # Is the user appealing?
 def isAppealing(userid):
     query = banappeals.select().where(
-        (banappeals.UserID.contains(str(userid))) & (
+        (banappeals.UserID.is_null(False) & banappeals.UserID.contains(str(userid))) & (
                 (banappeals.Accepted.is_null(True)) |
                 (banappeals.Accepted != True)
         )
