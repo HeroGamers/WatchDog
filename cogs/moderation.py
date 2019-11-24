@@ -369,8 +369,6 @@ class Moderation(commands.Cog):
                     await logger.log(
                         "TestMode seems enabled.. ignores ban functions. Check the console/script logs for the full debugging logs!",
                         bot, "DEBUG")
-                banguild = bot.get_guild(int(os.getenv('banlistguild')))
-                banguild_ban_list = await banguild.bans()
                 try:
                     user = await getUser(ctx, arg1)
                 except Exception as e:
@@ -406,7 +404,18 @@ class Moderation(commands.Cog):
 
                         # Sends main embed
                         guildCount = 0
-                        guilds = database.getBanSyncGuilds()
+                        # Gets all guilds, to see if the user is in any of them. If the user is, then add that guild
+                        # to the list of guilds to ban the user from
+                        guilds = []
+                        for guild in bot.guilds:
+                            if guild.get_member(user.id) is not None:
+                               guilds.append(guild.id)
+                        # Add the guilds where the user was found to the list of guilds that we ban sync
+                        bansyncguilds = database.getBanSyncGuilds()
+                        for guild in bansyncguilds:
+                            guilds.append(guild.GuildID)
+                        # And remove dupes
+                        guilds = list(dict.fromkeys(guilds))
                         if len(guilds) >= 1:
                             guildCountAll = len(guilds)
                             percent1 = round((round((guildCountAll / 5 * 1), 0) / (guildCountAll) * 100), 1)
@@ -423,10 +432,10 @@ class Moderation(commands.Cog):
                             # Causes lag in embed - embed.set_image(url="https://cdn.discordapp.com/attachments/456229881064325131/475498849696219141/ban.gif")
                             embed_message = await ctx.send(embed=embed)
                             # checks guilds
-                            for banSyncGuild in guilds:
-                                guild = bot.get_guild(int(banSyncGuild.GuildID))
+                            for guildID in guilds:
+                                guild = bot.get_guild(int(guildID))
                                 if guild is None:  # Check if guild is none
-                                    await logger.log("Guild is none... GuildID: " + banSyncGuild.GuildID, bot, "ERROR")
+                                    await logger.log("Guild is none... GuildID: " + str(guildID), bot, "ERROR")
                                     continue
                                 # Check for testMode
                                 if os.getenv('testModeEnabled') != "True":
@@ -487,9 +496,20 @@ class Moderation(commands.Cog):
                     await logger.log(
                         "TestMode seems enabled.. ignores unban functions. Check the console/script logs for the full debugging logs!",
                         bot, "DEBUG")
-                # Sends main embed
+
+                try:
+                    user = await getUser(ctx, arg1)
+                except Exception as e:
+                    await ctx.send(embed=Embed(color=discord.Color.red(), description="Specified user not found!"))
+                    await logger.log("Could not get a specified user - Specified arg: %s - Error: %s" % (arg1, e), bot,
+                                     "ERROR")
+                    return
+
+                if not database.isBanned(user.id):
+                    return
+
                 guildCount = 0
-                guilds = database.getBanSyncGuilds()
+                guilds = await bot.guilds()
                 if len(guilds) >= 1:
                     guildCountAll = len(guilds)
                     percent1 = round((round((guildCountAll / 5 * 1), 0) / (guildCountAll) * 100), 1)
@@ -500,13 +520,6 @@ class Moderation(commands.Cog):
                         "PercentageChecks: " + str(percent1) + ", " + str(percent2) + ", " + str(percent3) + ", " + str(
                             percent4))
                     messagepercentage = 0
-                    try:
-                        user = await getUser(ctx, arg1)
-                    except Exception as e:
-                        await ctx.send(embed=Embed(color=discord.Color.red(), description="Specified user not found!"))
-                        await logger.log("Could not get a specified user - Specified arg: %s - Error: %s" % (arg1, e), bot,
-                                         "ERROR")
-                        return
                     embed = discord.Embed(title="Account is being unbanned...", color=discord.Color.green(),
                                           description="0% complete! 👌")
                     embed.set_footer(text="%s - Global WatchDog Moderator" % ctx.author.name,
@@ -570,8 +583,6 @@ class Moderation(commands.Cog):
                     await logger.log(
                         "TestMode seems enabled.. ignores ban functions. Check the console/script logs for the full debugging logs!",
                         bot, "DEBUG")
-                banguild = bot.get_guild(int(os.getenv('banlistguild')))
-                banguild_ban_list = await banguild.bans()
                 # remove dupes
                 args = list(dict.fromkeys(args))
                 # sort the args into users and reason
@@ -674,10 +685,22 @@ class Moderation(commands.Cog):
                             continue
                         else:
                             # checks other guilds
-                            for banSyncGuild in database.getBanSyncGuilds():
-                                guild = bot.get_guild(int(banSyncGuild.GuildID))
+                            # Gets all guilds, to see if the user is in any of them. If the user is, then add that guild
+                            # to the list of guilds to ban the user from
+                            guilds = []
+                            for guild in bot.guilds:
+                                if guild.get_member(user.id) is not None:
+                                    guilds.append(guild.id)
+                            # Add the guilds where the user was found to the list of guilds that we ban sync
+                            bansyncguilds = database.getBanSyncGuilds()
+                            for guild in bansyncguilds:
+                                guilds.append(guild.GuildID)
+                            # And remove dupes
+                            guilds = list(dict.fromkeys(guilds))
+                            for guildID in guilds:
+                                guild = bot.get_guild(int(guildID))
                                 if guild is None:  # Check if guild is none
-                                    await logger.log("Guild is none... GuildID: " + banSyncGuild.GuildID, bot, "ERROR")
+                                    await logger.log("Guild is none... GuildID: " + str(guildID), bot, "ERROR")
                                     continue
 
                                 # checks if own guild, if it is, skip

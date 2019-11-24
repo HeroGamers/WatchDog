@@ -47,11 +47,10 @@ class listenerCog(commands.Cog):
 
     async def unban(self, user):
         bot = self.bot
-        for banSyncGuild in database.getBanSyncGuilds():
-            guild = bot.get_guild(int(banSyncGuild.GuildID))
-
+        guilds = await bot.guilds()
+        for guild in guilds:
             if guild is None:
-                await logger.log("Guild is none... GuildID: " + banSyncGuild.GuildID, bot, "ERROR")
+                await logger.log("Guild is none... GuildID: " + guild.id, bot, "ERROR")
                 continue
 
             # Check for testMode
@@ -135,7 +134,8 @@ class listenerCog(commands.Cog):
                     "appeal, please write us a good reasoning on why YOU should get unbanned, "
                     "and why WE were wrong in banning you!")
             except Exception as e:
-                # if we can't send the DM, the user probably has DM's off, at which point we would uhhh, yeah. back to this later
+                # if we can't send the DM, the user probably has DM's off, at which point we would uhhh, yeah. back
+                # to this later
                 await logger.log(
                     "Couldn't send DM to user that reacted. User ID: " + str(user.id) + " - Error: " + str(e), bot,
                     "INFO")
@@ -152,8 +152,6 @@ class listenerCog(commands.Cog):
                              "DEBUG")
             if user.bot:
                 return
-
-
 
             # Variables used
             guild = bot.get_guild(payload.guild_id)
