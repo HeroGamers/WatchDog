@@ -457,6 +457,7 @@ class Moderation(commands.Cog):
                         # Check for testMode
                         if os.getenv('testModeEnabled') != "True":
                             # Get the ban reason, if there is any
+                            banreason = None
                             if len(args) > 1:
                                 banreason = ' '.join(args)
                             # Send private ban notif in private moderator ban list as well as message in botlog
