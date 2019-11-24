@@ -1,22 +1,91 @@
+import datetime
+
 import discord, asyncio
 from discord import File
 from discord.ext import commands
-
 import database
 from Util import logger
 import os
+
+
+def createEmbed(status, color, reason, appealUser, appeal, ban, moderator=None):
+    if ban.Reason is None:
+        ban.Reason = "N/A"
+    moderatorID_text = ""
+    if ban.Moderator is not None:
+        moderatorID_text = " (`" + ban.Moderator + "`)"
+    moderatorTag = "N/A"
+    if moderator is not None:
+        moderatorTag = moderator.name + "#" + moderator.discriminator
+
+    banTime = datetime.datetime.strptime(str(ban.Time), '%Y-%m-%d %H:%M:%S.%f')
+    appealTime = datetime.datetime.strptime(str(appeal.Time), '%Y-%m-%d %H:%M:%S.%f')
+
+    embed = discord.Embed(title="Ban Appeal - Status: " + status, color=color,
+                          description="Appeal Reason: " + reason)
+    embed.add_field(name="UserID:", value=str(appealUser.id),
+                    inline=True)
+    embed.add_field(name="DiscordTag:", value=str(appealUser.name) + "#" + str(appealUser.discriminator),
+                    inline=True)
+    embed.add_field(name="Banned for:", value=ban.Reason,
+                    inline=True)
+    embed.add_field(name="Banned by:",
+                    value=moderatorTag + moderatorID_text,
+                    inline=True)
+    embed.add_field(name="Time of ban:", value=banTime.strftime("%Y-%m-%d %H:%M:%S"),
+                    inline=True)
+    embed.add_field(name="Time of appeal:", value=appealTime.strftime("%Y-%m-%d %H:%M:%S"),
+                    inline=True)
+    embed.set_footer(text=appealUser.name + "#" + appealUser.discriminator, icon_url=appealUser.avatar_url)
+
+    return embed
 
 
 class listenerCog(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
 
+    async def unban(self, user):
+        bot = self.bot
+        for banSyncGuild in database.getBanSyncGuilds():
+            guild = bot.get_guild(int(banSyncGuild.GuildID))
+
+            if guild is None:
+                await logger.log("Guild is none... GuildID: " + banSyncGuild.GuildID, bot, "ERROR")
+                continue
+
+            # Check for testMode
+            if os.getenv('testModeEnabled') != "True":
+                try:
+                    await guild.unban(user, reason="WatchDog - Global Unban")
+                except:
+                    await logger.log("Could not unban the user `%s` (%s) in the guild `%s` (%s)" % (
+                        user.name, user.id, guild.name, guild.id), bot, "INFO")
+            else:
+                logger.logDebug("TestUnBanned (unban) " + user.name + " (" + str(
+                    user.id) + "), in the guild " + guild.name + "(" + str(guild.id) + ")", "DEBUG")
+        if os.getenv('testModeEnabled') != "True":
+            database.invalidateBan(user.id)
+
     @commands.Cog.listener()
     async def on_member_join(self, member):
         bot = self.bot
+        guild = member.guild
+        if guild.id == int(os.getenv('appealguild')):
+            await logger.log("User joined the appeal guild! UserID: " + str(member.id), bot, "DEBUG")
+            return
+        if database.isBanned(member.id):
+            await logger.log("Banned User tried joining a guild! UserID: " + str(member.id), bot, "INFO")
+            try:
+                user = await bot.fetch_user(member.id)
+                await guild.ban(user, reason="WatchDog - Global Ban")
+            except Exception as e:
+                await logger.log("Could not ban the user `%s` (%s) in the guild `%s` (%s) - %s" % (
+                    user.name, user.id, guild.name, guild.id, e), bot, "INFO")
 
     @commands.Cog.listener()
     async def on_raw_reaction_add(self, payload):
+        logger.logDebug("New reaction! Payload emoji name: " + payload.emoji.name)
         bot = self.bot
         userid = payload.user_id
         channel = bot.get_channel(payload.channel_id)
@@ -25,51 +94,58 @@ class listenerCog(commands.Cog):
         # we check whether the reaction added is from the appeal channel
         appealguild = bot.get_guild(int(os.getenv('appealguild')))
         appealchannel = None
-        for channel in appealguild.channels:
-            if channel.name == "appeal-here":
-                appealchannel = channel
+        for appealguildchannel in appealguild.channels:
+            if appealguildchannel.name == "appeal-here":
+                appealchannel = appealguildchannel
                 break
         if appealchannel is None:
-            await logger.log("No appealchannel found!", bot, "ERROR")
+            await logger.log("No appealchannel found! Returning!", bot, "ERROR")
             return
-        else:
-            if payload.channel_id == appealchannel.id:
-                await logger.log("A reaction has been added in the appeal channel! User ID: " + str(user.id), bot,
-                                 "DEBUG")
-                if user.bot:
-                    return
 
-                # Checking whether the user already is verified
-                if database.isAppealing(userid):
-                    await logger.log("Already appealing! User ID: " + str(user.id), bot, "DEBUG")
-                    return
+        # If the channel is the appeal channel
+        if payload.channel_id == appealchannel.id:
+            await logger.log("A reaction has been added in the appeal channel! User ID: " + str(user.id), bot,
+                             "DEBUG")
+            if user.bot:
+                return
 
-                # Add the user to the db
-                await database.newBanAppeal(user.id)
+            # Checking whether the user is banned
+            if not database.isBanned(userid):
+                await logger.log("An user who is not banned tried adding the ban appeal reaction! User ID: " +
+                                 str(user.id), bot, "DEBUG")
+                return
 
-                # if yes, send the user the verification message...
+            # Checking whether the user already is verified
+            if database.isAppealing(userid):
+                await logger.log("Already appealing! User ID: " + str(user.id), bot, "DEBUG")
+                return
+
+            # Add the user to the db
+            database.newBanAppeal(user.id)
+
+            dm_channel = user.dm_channel
+            if dm_channel is None:
+                await user.create_dm()
                 dm_channel = user.dm_channel
-                if dm_channel is None:
-                    await user.create_dm()
-                    dm_channel = user.dm_channel
 
-                # Send message
-                try:
-                    await dm_channel.send(
-                        "Thanks for your interest in appealing your WatchDog ban! To complete your ban "
-                        "appeal, please write us a good reasoning on why YOU should get unbanned, "
-                        "and why WE were wrong in banning you!")
-                except Exception as e:
-                    # if we can't send the DM, the user probably has DM's off, at which point we would uhhh, yeah. back to this later
-                    await logger.log(
-                        "Couldn't send DM to user that reacted. User ID: " + str(user.id) + " - Error: " + str(e), bot,
-                        "INFO")
-                    # send a headsup in the verification channel
-                    channel = bot.get_channel(int(os.getenv('verificationChannel')))
-                    await channel.send(
-                        content=user.mention + " Sorry! It seems like your DM didn't go through, try to enable your DM's for this server!",
-                        delete_after=float(30))
-                    return
+            # Send message
+            try:
+                await dm_channel.send(
+                    "Thanks for your interest in appealing your WatchDog Ban!\n\nTo complete your ban "
+                    "appeal, please write us a good reasoning on why YOU should get unbanned, "
+                    "and why WE were wrong in banning you!")
+            except Exception as e:
+                # if we can't send the DM, the user probably has DM's off, at which point we would uhhh, yeah. back to this later
+                await logger.log(
+                    "Couldn't send DM to user that reacted. User ID: " + str(user.id) + " - Error: " + str(e), bot,
+                    "INFO")
+                # send a headsup in the verification channel
+                channel = bot.get_channel(int(os.getenv('verificationChannel')))
+                await channel.send(
+                    content=user.mention + " Sorry! It seems like your DM didn't go through, try to enable your DM's for this server!",
+                    delete_after=float(30))
+                return
+
         # If the channel is the banappeal channel
         if payload.channel_id == int(os.getenv('banappealschannel')):
             await logger.log("A reaction has been added in the moderator appeal channel! User ID: " + str(user.id), bot,
@@ -77,44 +153,101 @@ class listenerCog(commands.Cog):
             if user.bot:
                 return
 
-            message = await bot.fetch_message(payload.message_id)
+            # Variables used
+            guild = bot.get_guild(payload.guild_id)
+            reactMember = guild.get_member(payload.user_id)
+            message = await channel.fetch_message(payload.message_id)
+            appeal = database.getAppealFromMessage(message.id)
+            appealUser = bot.get_user(int(appeal.UserID))
+            ban = database.getBan(appealUser.id)
+            if ban is None:
+                logger.log("Ban is none!", bot, "WARN")
+                return
+            reason = str(appeal.Reason)
+            moderator = None
+            if ban.Moderator is not None:
+                moderator = bot.get_user(int(ban.Moderator))
+            color = discord.Color.blurple()
 
             # Fetch new reason
-            if payload.emoji.name == "arrows_counterclockwise":
-                appeal = database.getAppealFromMessage(message.id)
-                reason = str(appeal.Reason)
-                user = bot.get_user(int(appeal.UserID))
-                ban = database.getBan(user.id)
-                if ban is None:
-                    logger.log("Ban is none!", bot, "WARN")
-                    return
-                moderator = bot.get_user(int(ban.moderator))
-
-                embed = discord.Embed(title="Ban Appeal", color=discord.Color.green(),
-                                      description="Appeal Reason: " + reason)
-                embed.add_field(name="UserID:", value=str(user.id),
-                                inline=True)
-                embed.add_field(name="DiscordTag:", value=str(user.name) + "#" + str(user.discriminator),
-                                inline=True)
-                embed.add_field(name="Banned for:", value=ban.Reason,
-                                inline=True)
-                embed.add_field(name="Banned by:",
-                                value=moderator.name + "#" + moderator.discriminator + "(`" + ban.Moderator + "`)",
-                                inline=True)
-                embed.add_field(name="Time of ban:", value=str(ban.Time),
-                                inline=True)
-                embed.add_field(name="Time of appeal:", value=str(appeal.Time),
-                                inline=True)
-                embed.set_footer(text=user.name, icon_url=user.avatar_url)
-                await message.edit(embed=embed)
-
+            # if payload.emoji.name == "arrows_counterclockwise":
+            #     logger.logDebug("Getting new ban appeal reason only", "DEBUG")
             # Approve
-            if payload.emoji.name == "white_check_mark":
-                print("ok")
+            if payload.emoji.name == "✅":
+                status = "Accepted"
+                await self.unban(appealUser)
+                database.updateBanAppealStatus(appealUser.id, True, user.id)
+                color = discord.Color.green()
 
+                await message.channel.send("Appeal accepted! " + appealUser.name + "#" + appealUser.discriminator
+                                           + " has been unbanned!", delete_after=10)
+
+                embed = discord.Embed(title="Ban Appeal", color=discord.Color.blue(),
+                                      description="Appeal Reason: " + reason)
+
+                # Notify the user
+                dm_channel = appealUser.dm_channel
+                if dm_channel is None:
+                    await appealUser.create_dm()
+                    dm_channel = appealUser.dm_channel
+
+                # Send message
+                try:
+                    await dm_channel.send(
+                        "Thanks for your interest in appealing your WatchDog Ban!\n\nYour Ban Appeal has been accepted "
+                        "by our Global Moderators, in other words, you are now unbanned! Don't go and get yourself "
+                        "banned again!")
+                except Exception as e:
+                    # if we can't send the DM, the user probably has DM's off, at which point we would uhhh, yeah. back to this later
+                    await logger.log(
+                        "Couldn't send DM to banned user. User ID: " + str(appealUser.id) + " - Error: " + str(e), bot,
+                        "INFO")
+
+                try:
+                    await appealguild.kick(appealUser)
+                except Exception as e:
+                    await logger.log("Could not kick user from the appeal guild after being accepted! - " + str(e), bot, "ERROR")
             # Deny
-            if payload.emoji.name == "negative_squared_cross_mark":
-                print("ok")
+            elif payload.emoji.name == "❎":
+                status = "Denied"
+                database.updateBanAppealStatus(appealUser.id, False, user.id)
+                color = discord.Color.red()
+
+                await message.channel.send("Appeal denied! " + appealUser.name + "#" + appealUser.discriminator
+                                           + " has NOT been unbanned!", delete_after=10)
+
+                # Notify the user
+                dm_channel = appealUser.dm_channel
+                if dm_channel is None:
+                    await appealUser.create_dm()
+                    dm_channel = appealUser.dm_channel
+
+                # Send message
+                try:
+                    await dm_channel.send(
+                        "Thanks for your interest in appealing your WatchDog Ban!\n\nWe are sorry to inform you that "
+                        "your Ban Appeal has been denied by our Global Moderators... If you believe that this is "
+                        "unjustified, you can always try appealing again, by writing a new reason, "
+                        "or you can try contacting the bot owner, HeroGamers#0001, directly!")
+                except Exception as e:
+                    # if we can't send the DM, the user probably has DM's off, at which point we would uhhh, yeah.
+                    # back to this later
+                    await logger.log(
+                        "Couldn't send DM to banned user. User ID: " + str(appealUser.id) + " - Error: " + str(e), bot,
+                        "INFO")
+            else:
+                return
+
+            # Update the embed
+            embed = createEmbed(status, color, reason, appealUser, appeal, ban, moderator)
+            await message.edit(embed=embed)
+
+            # Remove the reactions
+            await message.remove_reaction(payload.emoji.name, reactMember)
+            botMember = guild.get_member(bot.user.id)
+            await message.remove_reaction("❎", botMember)
+            await message.remove_reaction("✅", botMember)
+
 
     @commands.Cog.listener()
     async def on_message(self, message):
@@ -126,22 +259,52 @@ class listenerCog(commands.Cog):
 
         # check if it's a DM
         if isinstance(message.channel, discord.DMChannel):
-            await logger.log("New message in the DM's", bot, "DEBUG")
+            await logger.log("New message in the DM's! UserID: " + str(message.author.id) + " - Content: " + str(message.content), bot, "DEBUG")
 
             if message.content.startswith(os.getenv('prefix')):
                 return
 
             user = message.author
             if database.isAppealing(user.id):
+                logger.logDebug("User is appealing")
                 isNew = False
                 if database.hasNoAppealReason(user.id):
+                    logger.logDebug("A new appeal")
                     isNew = True
                 database.addBanAppealReason(user.id, message.content)
 
-                await message.channel.send("Thanks for your ban appeal reason! Our moderators will look into it!")
+                appealschannel = bot.get_channel(int(os.getenv('banappealschannel')))
+                ban = database.getBan(user.id)
+                if ban is None:
+                    await logger.log("Ban is none!", bot, "WARN")
+                    return
+
+                # Update the embed
+                appeal = database.getAppeal(user.id)
+                reason = str(appeal.Reason)
+                moderator = None
+                if ban.Moderator is not None:
+                    moderator = bot.get_user(int(ban.Moderator))
+
+                embed = createEmbed("Pending", discord.Color.blurple(), reason, user, appeal, ban, moderator)
 
                 if isNew:
-                    os.getenv('banappealschannel')
+                    appealMessage = await appealschannel.send(embed=embed)
+                    database.addAppealMessage(user.id, appealMessage.id)
+                else:
+                    appealMessage = await appealschannel.fetch_message(int(database.getAppealMessage(user.id)))
+                    await appealMessage.edit(embed=embed)
+                await appealMessage.add_reaction("✅")
+                await appealMessage.add_reaction("❎")
+
+
+                # Let the user know that we've updated their appeal
+                await message.channel.send("Thanks for your interest in appealing your WatchDog Ban!\n\nYour appeal "
+                                           "reason has been updated, and our moderators will look into it! If you "
+                                           "wish to update your appeal reason, then just write a new appeal reason in "
+                                           "this DM!")
+            else:
+                logger.logDebug("User is not appealing")
 
 
 def setup(bot):

@@ -4,13 +4,30 @@ from bot import bot
 from Util import logger
 
 
-async def ban(user, moderator=None, reason=None, guildid=None):
-    for guild in bot.guilds:
+async def ban(user, moderator=None, reason=None, guildid=None, channel=None):
+    guilds = []
+
+    if guildid is not None:
+        try:
+            guild = bot.get_guild(int(guildid))
+            guilds.append(guild)
+        except Exception as e:
+            await logger.log("Could not fetch guild " + str(guildid), bot, "ERROR")
+
+    for banSyncGuild in database.getBanSyncGuilds():
+        try:
+            guild = bot.get_guild(int(banSyncGuild.GuildID))
+            guilds.append(guild)
+        except Exception as e:
+            await logger.log("Could not fetch guild " + str(banSyncGuild.GuildID), bot, "ERROR")
+            continue
+
+    for guild in guilds:
         # Check for testMode
         if os.getenv('testModeEnabled') != "True":
             # tries to ban
             try:
-                await guild.ban(user, reason=f"WatchDog - Global Ban")
+                await guild.ban(user, reason="WatchDog - Global Ban")
             except:
                 await logger.log("Could not ban the user `%s` (%s) in the guild `%s` (%s)" % (
                     user.name, user.id, guild.name, guild.id), bot, "INFO")
@@ -23,11 +40,17 @@ async def ban(user, moderator=None, reason=None, guildid=None):
 
 
 async def unban(user):
-    for guild in bot.guilds:
+    for banSyncGuild in database.getBanSyncGuilds():
+        try:
+            guild = bot.get_guild(banSyncGuild.GuildID)
+        except Exception as e:
+            await logger.log("Could not fetch guild " + banSyncGuild.GuildID, bot, "ERROR")
+            continue
+
         # Check for testMode
         if os.getenv('testModeEnabled') != "True":
             try:
-                await guild.unban(user, reason=f"WatchDog - Global Unban")
+                await guild.unban(user, reason="WatchDog - Global Unban")
             except:
                 await logger.log("Could not unban the user `%s` (%s) in the guild `%s` (%s)" % (
                     user.name, user.id, guild.name, guild.id), bot, "INFO")

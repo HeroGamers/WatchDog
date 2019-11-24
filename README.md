@@ -4,6 +4,9 @@ WatchDog - Banning baddies done right [![Codacy Badge](https://api.codacy.com/pr
 ## What is WatchDog?
 Watchdog is a Discord bot which bans members from all the servers that the bot has access to. The bot runs off a server of choice, and uses that servers list of banned members as a database for the bans.
 
+### Appeal bans
+So, you might've gotten yourself banned... Well, fret not! You can appeal your ban through the WatchDog Appeal Server, and have a moderator re-evaluate your ban! [Join the WatchDog Appeal Server!](https://discord.gg/J9YVWgF)
+
 ## Installation
 1.  Extract the code
 2.  Install the requirements (requirements.txt)

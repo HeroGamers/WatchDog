@@ -21,6 +21,11 @@ class Info(commands.Cog):
             """Get help and support regarding the bot."""
             await ctx.send("The forest where WatchDog roams, Treeland: https://discord.gg/PvFPEfd")
 
+        @bot.command(name="appeal")
+        async def _appeal(ctx):
+            """Appeal bans through the appeal server."""
+            await ctx.send("Banned? Appeal here: https://discord.gg/J9YVWgF")
+
         @bot.command(name="invite")
         async def _invite(ctx):
             """How to invite the bot."""
