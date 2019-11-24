@@ -410,12 +410,18 @@ class Moderation(commands.Cog):
                         for guild in bot.guilds:
                             if guild.get_member(user.id) is not None:
                                guilds.append(guild.id)
-                        # Add the guilds where the user was found to the list of guilds that we ban sync
+                        # Add the guilds that we ban sync
                         bansyncguilds = database.getBanSyncGuilds()
                         for guild in bansyncguilds:
-                            guilds.append(guild.GuildID)
+                            guilds.append(int(guild.GuildID))
                         # And remove dupes
                         guilds = list(dict.fromkeys(guilds))
+                        # To be safe, check to see and remove the appeal server... has happened before
+                        try:
+                            guilds.remove(int(os.getenv('appealguild')))
+                            logger.logDebug("Appeal guild was in mutals...")
+                        except Exception:
+                            logger.logDebug("Appeal guild not in mutals...")
                         if len(guilds) >= 1:
                             guildCountAll = len(guilds)
                             percent1 = round((round((guildCountAll / 5 * 1), 0) / (guildCountAll) * 100), 1)
@@ -691,12 +697,18 @@ class Moderation(commands.Cog):
                             for guild in bot.guilds:
                                 if guild.get_member(user.id) is not None:
                                     guilds.append(guild.id)
-                            # Add the guilds where the user was found to the list of guilds that we ban sync
+                            # Add the guilds that we ban sync
                             bansyncguilds = database.getBanSyncGuilds()
                             for guild in bansyncguilds:
-                                guilds.append(guild.GuildID)
+                                guilds.append(int(guild.GuildID))
                             # And remove dupes
                             guilds = list(dict.fromkeys(guilds))
+                            # To be safe, check to see and remove the appeal server... has happened before
+                            try:
+                                guilds.remove(int(os.getenv('appealguild')))
+                                logger.logDebug("Appeal guild was in mutals...")
+                            except Exception:
+                                logger.logDebug("Appeal guild not in mutals...")
                             for guildID in guilds:
                                 guild = bot.get_guild(int(guildID))
                                 if guild is None:  # Check if guild is none
