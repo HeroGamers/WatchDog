@@ -515,7 +515,7 @@ class Moderation(commands.Cog):
                     return
 
                 guildCount = 0
-                guilds = await bot.guilds()
+                guilds = bot.guilds
                 if len(guilds) >= 1:
                     guildCountAll = len(guilds)
                     percent1 = round((round((guildCountAll / 5 * 1), 0) / (guildCountAll) * 100), 1)

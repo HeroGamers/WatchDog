@@ -47,8 +47,7 @@ class listenerCog(commands.Cog):
 
     async def unban(self, user):
         bot = self.bot
-        guilds = await bot.guilds()
-        for guild in guilds:
+        for guild in bot.guilds:
             if guild is None:
                 await logger.log("Guild is none... GuildID: " + guild.id, bot, "ERROR")
                 continue
