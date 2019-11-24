@@ -214,9 +214,6 @@ class listenerCog(commands.Cog):
                                        inline=True)
                 banlistembed.add_field(name="In channel", value="%s (`%s`)" % (channel.name, channel.id),
                                        inline=True)
-                if reason is not None:
-                    banlistembed.add_field(name="Reason", value="%s" % reason,
-                                           inline=True)
                 banlistembed.set_footer(text="%s has been globally unbanned" % appealUser,
                                         icon_url="https://cdn.discordapp.com/attachments/456229881064325131/489102109363666954/366902409508814848.png")
                 banlistembed.set_thumbnail(url=appealUser.avatar_url)

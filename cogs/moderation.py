@@ -433,6 +433,8 @@ class Moderation(commands.Cog):
                                     # tries to ban
                                     try:
                                         await guild.ban(user, reason="WatchDog - Global Ban")
+                                        await logger.log("Banned user " + user.name + " in the guild " + guild.name,
+                                                         bot, "DEBUG")
                                     except:
                                         await logger.log("Could not ban the user `%s` (%s) in the guild `%s` (%s)" % (
                                             user.name, user.id, guild.name, guild.id), bot, "INFO")
