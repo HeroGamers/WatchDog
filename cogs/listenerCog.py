@@ -153,11 +153,25 @@ class listenerCog(commands.Cog):
             if user.bot:
                 return
 
+
+
             # Variables used
             guild = bot.get_guild(payload.guild_id)
             reactMember = guild.get_member(payload.user_id)
             message = await channel.fetch_message(payload.message_id)
+
+            if payload.emoji.name == "✅" or payload.emoji.name == "❎":
+                # Remove the reactions
+                await message.remove_reaction(payload.emoji.name, reactMember)
+                botMember = guild.get_member(bot.user.id)
+                await message.remove_reaction("❎", botMember)
+                await message.remove_reaction("✅", botMember)
+            else:
+                return
+
             appeal = database.getAppealFromMessage(message.id)
+            if appeal is None:
+                return
             appealUser = bot.get_user(int(appeal.UserID))
             ban = database.getBan(appealUser.id)
             if ban is None:
@@ -172,15 +186,6 @@ class listenerCog(commands.Cog):
             # Fetch new reason
             # if payload.emoji.name == "arrows_counterclockwise":
             #     logger.logDebug("Getting new ban appeal reason only", "DEBUG")
-
-            if payload.emoji.name == "✅" or payload.emoji.name == "❎":
-                # Remove the reactions
-                await message.remove_reaction(payload.emoji.name, reactMember)
-                botMember = guild.get_member(bot.user.id)
-                await message.remove_reaction("❎", botMember)
-                await message.remove_reaction("✅", botMember)
-            else:
-                return
 
             # Approve
             if payload.emoji.name == "✅":
