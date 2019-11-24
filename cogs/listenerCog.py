@@ -172,18 +172,55 @@ class listenerCog(commands.Cog):
             # Fetch new reason
             # if payload.emoji.name == "arrows_counterclockwise":
             #     logger.logDebug("Getting new ban appeal reason only", "DEBUG")
+
+            if payload.emoji.name == "✅" or payload.emoji.name == "❎":
+                # Remove the reactions
+                await message.remove_reaction(payload.emoji.name, reactMember)
+                botMember = guild.get_member(bot.user.id)
+                await message.remove_reaction("❎", botMember)
+                await message.remove_reaction("✅", botMember)
+            else:
+                return
+
             # Approve
             if payload.emoji.name == "✅":
+                # Basic approval stuff
                 status = "Accepted"
                 await self.unban(appealUser)
                 database.updateBanAppealStatus(appealUser.id, True, user.id)
                 color = discord.Color.green()
 
+                # Send appeal accepted message
                 await message.channel.send("Appeal accepted! " + appealUser.name + "#" + appealUser.discriminator
                                            + " has been unbanned!", delete_after=10)
 
-                embed = discord.Embed(title="Ban Appeal", color=discord.Color.blue(),
-                                      description="Appeal Reason: " + reason)
+                # Send unban notif in banlist
+                if reactMember is not None:
+                    await logger.logEmbed(color, "Moderator `%s` unbanned `%s` - (%s)" % (reactMember.name,
+                                                                                          appealUser.name,
+                                                                                          appealUser.id), bot)
+
+                # Send private ban notif in private moderator ban list
+                banlistchannel = bot.get_channel(int(os.getenv('prvbanlist')))
+                banlistembed = discord.Embed(title="Account unbanned", color=discord.Color.green(),
+                                             description="`%s` has been globally unbanned" % appealUser.id)
+                if reactMember is not None:
+                    banlistembed.add_field(name="Moderator", value="%s (`%s`)" % (reactMember.name + "#" +
+                                                                                  reactMember.discriminator,
+                                                                                  reactMember.id),
+                                           inline=True)
+                banlistembed.add_field(name="Name when unbanned", value="%s" % appealUser, inline=True)
+                banlistembed.add_field(name="In server", value="%s (`%s`)" % (guild.name, guild.id),
+                                       inline=True)
+                banlistembed.add_field(name="In channel", value="%s (`%s`)" % (channel.name, channel.id),
+                                       inline=True)
+                if reason is not None:
+                    banlistembed.add_field(name="Reason", value="%s" % reason,
+                                           inline=True)
+                banlistembed.set_footer(text="%s has been globally unbanned" % appealUser,
+                                        icon_url="https://cdn.discordapp.com/attachments/456229881064325131/489102109363666954/366902409508814848.png")
+                banlistembed.set_thumbnail(url=appealUser.avatar_url)
+                await banlistchannel.send(embed=banlistembed)
 
                 # Notify the user
                 dm_channel = appealUser.dm_channel
@@ -191,22 +228,25 @@ class listenerCog(commands.Cog):
                     await appealUser.create_dm()
                     dm_channel = appealUser.dm_channel
 
-                # Send message
+                # Send message in DM's
                 try:
                     await dm_channel.send(
                         "Thanks for your interest in appealing your WatchDog Ban!\n\nYour Ban Appeal has been accepted "
                         "by our Global Moderators, in other words, you are now unbanned! Don't go and get yourself "
                         "banned again!")
                 except Exception as e:
-                    # if we can't send the DM, the user probably has DM's off, at which point we would uhhh, yeah. back to this later
+                    # if we can't send the DM, the user probably has DM's off, at which point we would uhhh,
+                    # yeah. back to this later
                     await logger.log(
                         "Couldn't send DM to banned user. User ID: " + str(appealUser.id) + " - Error: " + str(e), bot,
                         "INFO")
 
+                # Kick the user from the appealguild
                 try:
                     await appealguild.kick(appealUser)
                 except Exception as e:
-                    await logger.log("Could not kick user from the appeal guild after being accepted! - " + str(e), bot, "ERROR")
+                    await logger.log("Could not kick user from the appeal guild after being accepted! - " + str(e), bot,
+                                     "ERROR")
             # Deny
             elif payload.emoji.name == "❎":
                 status = "Denied"
@@ -235,19 +275,10 @@ class listenerCog(commands.Cog):
                     await logger.log(
                         "Couldn't send DM to banned user. User ID: " + str(appealUser.id) + " - Error: " + str(e), bot,
                         "INFO")
-            else:
-                return
 
             # Update the embed
             embed = createEmbed(status, color, reason, appealUser, appeal, ban, moderator)
             await message.edit(embed=embed)
-
-            # Remove the reactions
-            await message.remove_reaction(payload.emoji.name, reactMember)
-            botMember = guild.get_member(bot.user.id)
-            await message.remove_reaction("❎", botMember)
-            await message.remove_reaction("✅", botMember)
-
 
     @commands.Cog.listener()
     async def on_message(self, message):
@@ -259,7 +290,9 @@ class listenerCog(commands.Cog):
 
         # check if it's a DM
         if isinstance(message.channel, discord.DMChannel):
-            await logger.log("New message in the DM's! UserID: " + str(message.author.id) + " - Content: " + str(message.content), bot, "DEBUG")
+            await logger.log(
+                "New message in the DM's! UserID: " + str(message.author.id) + " - Content: " + str(message.content),
+                bot, "DEBUG")
 
             if message.content.startswith(os.getenv('prefix')):
                 return
@@ -296,7 +329,6 @@ class listenerCog(commands.Cog):
                     await appealMessage.edit(embed=embed)
                 await appealMessage.add_reaction("✅")
                 await appealMessage.add_reaction("❎")
-
 
                 # Let the user know that we've updated their appeal
                 await message.channel.send("Thanks for your interest in appealing your WatchDog Ban!\n\nYour appeal "
