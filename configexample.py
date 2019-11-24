@@ -1,12 +1,14 @@
 import os
 
-os.environ["prefix"] = "PREFIX HERE"
+os.environ["prefix"] = "COMMAND PREFIX HERE"
 os.environ["token"] = "TOKEN HERE"
 os.environ["botlog"] = "CHANNEL ID FOR LOGS"
-os.environ["botlogfail"] = "CHANNEL ID FOR LOGS WHEN A COMMAND FAILS"
-os.environ["prvbanlist"] = "CHANNEL ID TO SHOW PRIVATE INFO ABOUT BANS IN"
 os.environ["banlistguild"] = "GUILD ID FOR GUILD TO SYNC BANS FROM/TO"
-os.environ["mods"] = "USER ID'S SEPERATED BY SPACE"
-os.environ["ownerid"] = "USER ID OF BOTOWNER"
+os.environ["appealguild"] = "GUILD ID FOR GUILD WHERE BAN APPEALS ARE MADE"
+
 os.environ["debugEnabled"] = "True OR False"
 os.environ["testModeEnabled"] = "True OR False"
+
+os.environ["botlogfail"] = "CHANNEL ID FOR LOGS WHEN A COMMAND FAILS"
+os.environ["prvbanlist"] = "CHANNEL ID TO SHOW PRIVATE INFO ABOUT BANS IN"
+os.environ["banappealschannel"] = "CHANNEL ID FOR BAN APPEALS"

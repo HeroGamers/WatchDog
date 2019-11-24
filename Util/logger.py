@@ -4,6 +4,7 @@ import logging
 from logging.handlers import TimedRotatingFileHandler
 import datetime
 
+
 def setup_logger():
     if not os.path.exists("logs"):
         os.makedirs("logs")
@@ -18,6 +19,7 @@ def setup_logger():
     logger.addHandler(handler)
     logger.addHandler(screen_handler)
     logger.setLevel(logging.DEBUG)
+
 
 async def log(message, bot, level="INFO", debug=""):
     if (os.getenv('debugEnabled') == "False") and (level == "DEBUG"):
@@ -43,6 +45,7 @@ async def log(message, bot, level="INFO", debug=""):
         return
     logDebug(debug, level)
 
+
 def logDebug(message, level="INFO"):
     if (os.getenv('debugEnabled') == "False") and (level == "DEBUG"):
         return
@@ -58,6 +61,7 @@ def logDebug(message, level="INFO"):
         logger.critical(message)
     else:
         logger.info(message)
+
 
 async def logEmbed(color, description, bot, debug=""):
     channel = bot.get_channel(int(os.getenv('botlog')))

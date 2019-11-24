@@ -4,6 +4,10 @@
 # WatchDog Specific
 **/logs
 config.py
+WatchDog-Database.db
+.idea/
+monkeyPatch.py
+config-alt.py
 
 # Editors
 **/.idea/workspace.xml
