@@ -532,10 +532,9 @@ class Moderation(commands.Cog):
                                      icon_url=ctx.author.avatar_url)
                     # Causes lag in embed - embed.set_image(url="https://cdn.discordapp.com/attachments/456229881064325131/475498943178866689/unban.gif")
                     embed_message = await ctx.send(embed=embed)
-                    for banSyncGuild in guilds:
-                        guild = bot.get_guild(int(banSyncGuild.GuildID))
+                    for guild in guilds:
                         if guild is None:  # Check if guild is none
-                            await logger.log("Guild is none... GuildID: " + banSyncGuild.GuildID, bot, "ERROR")
+                            await logger.log("Guild is none... GuildID: " + guild.id, bot, "ERROR")
                             continue
                         # Check for testMode
                         if os.getenv('testModeEnabled') != "True":
