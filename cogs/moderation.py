@@ -17,7 +17,7 @@ class Moderation(commands.Cog):
         # Function to have the moderator confirm their action, on stuff like revsync
         async def confirmAction(ctx, action):
             await ctx.send("Are you sure you want to do a revsync, and sync all the bans from this guild too all other "
-                           "guilds? Confirm with a `Revsync the " + ctx.guild.name + "guild`...\nSleeping for 30 "
+                           "guilds? Confirm with a `Revsync the " + ctx.guild.name + " guild`...\nSleeping for 30 "
                                                                                      "seconds!")
             await asyncio.sleep(30)
             history = await ctx.channel.history(limit=100).flatten()
@@ -226,6 +226,8 @@ class Moderation(commands.Cog):
             banguild_ban_list = await banguild.bans()
             if isModerator(ctx.author.id):
                 if not await confirmAction(ctx, "revsync"):
+                    await ctx.send("You took too long to respond, or didn't respond with the correct message...\n" +
+                                   "Try again?")
                     return
                 if os.getenv('testModeEnabled') == "True":
                     await logger.log(
