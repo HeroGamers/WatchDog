@@ -5,6 +5,7 @@ from Util import logger
 import os
 
 from database import isModerator
+from database import isBanned
 
 
 class Info(commands.Cog):
@@ -30,9 +31,11 @@ class Info(commands.Cog):
         async def _invite(ctx):
             """How to invite the bot."""
             await ctx.send(
-                "Invite me to your server with this link: <https://discordapp.com/oauth2/authorize?scope=bot&client_id=475447317072183306&permissions=0x00000004>")
+                "Invite me to your server with this link: "
+                "<https://discordapp.com/oauth2/authorize?scope=bot&client_id=475447317072183306&permissions"
+                "=0x00000004>")
 
-        @bot.command(name="botinfo", aliases=["info"])
+        @bot.command(name="botinfo", aliases=["bot"])
         async def _botinfo(ctx):
             """Retrives information about the bot - GM only"""
             if isModerator(ctx.author.id):
@@ -47,7 +50,6 @@ class Info(commands.Cog):
                 embed.add_field(name="Global Bans", value="%s" % len(ban_list), inline=True)
                 embed.add_field(name="Central Server", value=ban_list_guild.name,
                                 inline=True)
-                # embed.add_field(name="Log channel", value="<#%s>" % bot.get_channel(int(os.getenv('botlog'))).id, inline=True)
                 embed.set_footer(text="%s - Global WatchDog Moderator" % ctx.author.name,
                                  icon_url=ctx.author.avatar_url)
                 await ctx.send(embed=embed)
@@ -55,7 +57,7 @@ class Info(commands.Cog):
                 await ctx.send(
                     embed=Embed(color=discord.Color.red(), description="You are not a Global Moderator! Shame!"))
 
-        @bot.command(name="userinfo", aliases=["whois", "lookup"])
+        @bot.command(name="userinfo", aliases=["whois", "lookup", "info"])
         async def _userinfo(ctx, arg1):
             """Gets info about a user"""
             try:
@@ -84,22 +86,11 @@ class Info(commands.Cog):
                 embed.add_field(name="Created at:",
                                 value="%s" % discord.utils.snowflake_time(user.id).strftime("%Y-%m-%d %H:%M:%S"),
                                 inline=True)
-                embed.add_field(name="Banned:", value="Pending...", inline=True)
+                embed.add_field(name="Banned:", value="Yes" if isBanned(user.id) else "No", inline=True)
                 embed.add_field(name="In guild with bot:", value="Pending...", inline=True)
                 embed.set_thumbnail(url=user.avatar_url)
                 embed.set_footer(text="Userinfo requested by %s" % ctx.author.name, icon_url=ctx.author.avatar_url)
                 embed_message = await ctx.send(embed=embed)
-
-                banned = "No"
-                banguild = bot.get_guild(int(os.getenv('banlistguild')))
-                ban_list = await banguild.bans()
-                for BanEntry in ban_list:
-                    if user == BanEntry.user:
-                        banned = "Yes"
-                        break
-
-                embed.set_field_at(index=2, name="Banned:", value="%s" % banned, inline=True)
-                await embed_message.edit(embed=embed)
 
                 inguildwithbot = "No"
                 for guild in bot.guilds:

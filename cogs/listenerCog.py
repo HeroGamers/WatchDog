@@ -83,7 +83,7 @@ class listenerCog(commands.Cog):
 
     @commands.Cog.listener()
     async def on_raw_reaction_add(self, payload):
-        logger.logDebug("New reaction! Payload emoji name: " + payload.emoji.name)
+        # logger.logDebug("New reaction! Payload emoji name: " + payload.emoji.name)
         bot = self.bot
         userid = payload.user_id
         channel = bot.get_channel(payload.channel_id)

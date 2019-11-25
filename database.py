@@ -4,13 +4,17 @@ from Util import logger
 
 db = SqliteDatabase('./WatchDog-Database.db')
 
+snowflake_max_length = 20  # It is currently 18, but max size of uint64 is 20 chars
+discordtag_max_length = 37  # Max length of usernames are 32 characters, added # and the discrim gives 37
+guildname_max_length = 100  # For some weird reason guild names can be up to 100 chars... whatevs lol
+
 
 # ------------------------------------------------ GLOBAL MODERATORS ------------------------------------------------- #
 
 # The Global Moderators Table
 class moderators(Model):
-    UserID = CharField(unique=True)
-    DiscordTag = CharField()
+    UserID = CharField(unique=True, max_length=snowflake_max_length)
+    DiscordTag = CharField(max_length=discordtag_max_length)
     IsOwner = BooleanField()
 
     class Meta:
@@ -27,7 +31,7 @@ def isModerator(userid):
 
 # Is the user an owner of the bot (there can be multiple)
 def isBotOwner(userid):
-    query = moderators.select().where(moderators.UserID.contains(str(userid)) and moderators.IsOwner == True)
+    query = moderators.select().where((moderators.UserID.contains(str(userid))) and (moderators.IsOwner == True))
     if query.exists():
         return True
     return False
@@ -38,13 +42,13 @@ def isBotOwner(userid):
 
 # The Global Bans Table
 class bans(Model):
-    UserID = CharField(unique=True)
-    DiscordTag = CharField(null=True)
+    UserID = CharField(unique=True, max_length=snowflake_max_length)
+    DiscordTag = CharField(null=True, max_length=discordtag_max_length)
     IsActive = BooleanField()
     Reason = CharField(null=True)
     AvatarURL = CharField(null=True)
-    Moderator = CharField(null=True)
-    Guild = CharField(null=True)
+    Moderator = CharField(null=True, max_length=snowflake_max_length)
+    Guild = CharField(null=True, max_length=snowflake_max_length)
     Time = DateTimeField()
 
     class Meta:
@@ -82,7 +86,7 @@ def getBan(userid):
 
 # Is the user banned?
 def isBanned(userid):
-    query = bans.select().where(bans.UserID.contains(str(userid)) & bans.IsActive == True)
+    query = bans.select().where((bans.UserID.contains(str(userid))) & (bans.IsActive == True))
     if query.exists():
         return True
     return False
@@ -93,11 +97,11 @@ def isBanned(userid):
 
 # Table for the ban appeals
 class banappeals(Model):
-    UserID = CharField(unique=True)
+    UserID = CharField(unique=True, max_length=snowflake_max_length)
     Reason = CharField(null=True)
-    AppealMessageID = CharField(null=True)
+    AppealMessageID = CharField(null=True, max_length=snowflake_max_length)
     Accepted = BooleanField(null=True)
-    DecidedBy = CharField(null=True)
+    DecidedBy = CharField(null=True, max_length=snowflake_max_length)
     Time = DateTimeField()
 
     class Meta:
@@ -138,7 +142,7 @@ def isAppealing(userid):
 
 # Is there no ban appeal reason?
 def hasNoAppealReason(userid):
-    query = banappeals.select().where(banappeals.UserID.contains(str(userid)) & banappeals.Reason == None)
+    query = banappeals.select().where((banappeals.UserID.contains(str(userid))) & (banappeals.Reason == None))
     if query.exists():
         return True
     return False
@@ -194,10 +198,10 @@ def updateBanAppealStatus(userid, boolean, moderator):
 
 # Table for the servers where instant ban-sync is enabled
 class guilds(Model):
-    GuildID = CharField(unique=True)
-    GuildName = CharField(null=True)
-    OwnerID = CharField(null=True)
-    OwnerTag = CharField(null=True)
+    GuildID = CharField(unique=True, max_length=snowflake_max_length)
+    GuildName = CharField(null=True, max_length=guildname_max_length)
+    OwnerID = CharField(null=True, max_length=snowflake_max_length)
+    OwnerTag = CharField(null=True, max_length=discordtag_max_length)
     HasActiveSync = BooleanField()
     Time = DateTimeField()
 
@@ -236,7 +240,7 @@ def getBanSyncGuilds():
 
 # Is the guild on the list of guilds to ban-sync to?
 def isBanSyncGuild(guildid):
-    query = guilds.select().where(guilds.GuildID.contains(str(guildid)) & guilds.HasActiveSync == True)
+    query = guilds.select().where((guilds.GuildID.contains(str(guildid))) & (guilds.HasActiveSync == True))
     if query.exists():
         return True
     return False

@@ -5,6 +5,7 @@
 **/logs
 config.py
 WatchDog-Database.db
+WatchDog-Database.db-journal
 .idea/
 monkeyPatch.py
 config-alt.py

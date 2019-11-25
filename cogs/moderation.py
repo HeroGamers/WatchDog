@@ -43,7 +43,7 @@ class Moderation(commands.Cog):
             prvchannel = bot.get_channel(int(os.getenv('prvbanlist')))
             prvembed = discord.Embed(title="Account " + text, color=color,
                                      description="`%s` has been globally %s" % (user.id, text))
-            prvembed.add_field(name="Moderator", value="%s (`%s`)" % (ctx.author.name + "#" + ctx.author.discriminator, ctx.author.id),
+            prvembed.add_field(name="Moderator", value="%s (`%s`)" % (ctx.author.name, ctx.author.id),
                                inline=True)
             prvembed.add_field(name="Name when " + text, value="%s" % user, inline=True)
             prvembed.add_field(name="In server", value="%s (`%s`)" % (ctx.guild.name, ctx.guild.id),
@@ -131,6 +131,8 @@ class Moderation(commands.Cog):
                 await ctx.send("Sorry, but this command is restricted to some guilds, and we doubt that you will need "
                                "it! If you do feel like you need to sync all the bans, then please do reach out to a "
                                "Global Moderator on the Support Guild (`" + str(os.getenv('prefix')) + "support`)!")
+                await logger.log("Sync command denied! GuildID: " + str(ctx.guild.id) + " - IsBanSyncGuild: " +
+                                 str(database.isBanSyncGuild(ctx.guild.id)) + " - IsGuildInDB: " + str(database.isGuildInDB(ctx.guild.id)), bot, "DEBUG")
                 return
             if os.getenv('testModeEnabled') == "True":
                 await logger.log(
@@ -160,15 +162,15 @@ class Moderation(commands.Cog):
                 for BanEntry2 in currentguild_ban_list:  # Checks if the account already is banned on the guild
                     if BanEntry2.user.id == BanEntry.user.id:
                         banCount += 1
-                        logger.logDebug(str(banCount) + "/" + str(
-                            banCountAll) + " User already banned, skipping - " + BanEntry.user.name, "DEBUG")
+                        # logger.logDebug(str(banCount) + "/" + str(
+                        #     banCountAll) + " User already banned, skipping - " + BanEntry.user.name, "DEBUG")
                         ban_list_list = list(ban_list)
                         ban_list_list.remove(BanEntry)
                         ban_list = tuple(ban_list_list)
                         # Does the embed change
                         percentRaw = (banCount / banCountAll) * 100
                         percent = round(percentRaw, 1)
-                        logger.logDebug("Percent: " + str(percent), "DEBUG")
+                        # logger.logDebug("Percent: " + str(percent), "DEBUG")
                         if ((percent == percent1) or (percent == percent2) or (percent == percent3) or (
                                 percent == percent4)) and (percent != messagepercentage):
                             logger.logDebug("Embed update triggered, percent: " + str(percent), "DEBUG")
@@ -476,7 +478,9 @@ class Moderation(commands.Cog):
                             # Get the ban reason, if there is any
                             banreason = None
                             if len(args) > 1:
+                                logger.logDebug("More than 1 argument given on ban command, getting banreason")
                                 banreason = ' '.join(args)
+                                logger.logDebug("Banreason: " + banreason)
                             # Send private ban notif in private moderator ban list as well as message in botlog
                             await logBan(ctx, user, reason=banreason)
                         else:
