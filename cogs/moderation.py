@@ -303,10 +303,28 @@ class Moderation(commands.Cog):
                         logger.logDebug(str(banCount) + "/" + str(
                             banCountAll) + " User not banned, banning - " + BanEntry.user.name, "DEBUG")
                         # checks other guilds
-                        for banSyncGuild in database.getBanSyncGuilds():
-                            guild = bot.get_guild(int(banSyncGuild.GuildID))
+                        # Gets all guilds, to see if the user is in any of them. If the user is, then add that guild
+                        # to the list of guilds to ban the user from
+                        guilds = []
+                        for guild in bot.guilds:
+                            if guild.get_member(BanEntry.user.id) is not None:
+                                guilds.append(guild.id)
+                        # Add the guilds that we ban sync
+                        bansyncguilds = database.getBanSyncGuilds()
+                        for guild in bansyncguilds:
+                            guilds.append(int(guild.GuildID))
+                        # And remove dupes
+                        guilds = list(dict.fromkeys(guilds))
+                        # To be safe, check to see and remove the appeal server... has happened before
+                        try:
+                            guilds.remove(int(os.getenv('appealguild')))
+                            logger.logDebug("Appeal guild was in mutals...")
+                        except Exception:
+                            logger.logDebug("Appeal guild not in mutals...")
+                        for guildID in guilds:
+                            guild = bot.get_guild(int(guildID))
                             if guild is None:  # Check if guild is none
-                                await logger.log("Guild is none... GuildID: " + banSyncGuild.GuildID, bot, "ERROR")
+                                await logger.log("Guild is none... GuildID: " + str(guildID), bot, "ERROR")
                                 continue
                             # checks if own guild, if it is, skip
                             if guild != ctx.guild:
