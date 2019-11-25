@@ -341,7 +341,8 @@ class Moderation(commands.Cog):
                         # Check for testMode
                         if os.getenv('testModeEnabled') != "True":
                             # Send private ban notif in private moderator ban list as well as message in botlog
-                            await logBan(ctx, BanEntry.user)
+                            await logBan(ctx, BanEntry.user, reason="Revsync from " + ctx.guild.name +
+                                                                    " (" + str(ctx.guild.id) + ")")
                         else:
                             logger.logDebug(
                                 "TestSent (unban) embeds and prvlist notif for " + BanEntry.user.name + " (" + str(
