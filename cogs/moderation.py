@@ -277,7 +277,7 @@ class Moderation(commands.Cog):
                                              icon_url=ctx.author.avatar_url)
                             await embed_message.edit(embed=embed)
                         banned = True
-                        break
+                        continue
                     if banned:
                         continue
                     elif BanEntry.user == ctx.bot.user:
