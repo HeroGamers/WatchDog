@@ -13,7 +13,6 @@ class serveradministration(commands.Cog):
         async def _addserver(ctx, *args):
             """Enables/disables instant ban-sync on a guild"""
             if database.isModerator(ctx.author.id):
-                logger.logDebug(str(len(args)))
                 if len(args) < 1:
                     guild = ctx.guild
                     guild_id = guild.id
@@ -22,6 +21,7 @@ class serveradministration(commands.Cog):
                     guild = bot.get_guild(guild_id)
 
                 if not database.isGuildInDB(guild_id):
+                    logger.logDebug("Guild is not in the database, adding it")
                     name = None
                     ownerid = None
                     ownername = None
@@ -31,6 +31,7 @@ class serveradministration(commands.Cog):
                         ownername = guild.owner.name
                     database.addBanSyncGuild(guild_id, name, ownerid, ownername)
                 else:
+                    logger.logDebug("Guild is already in the database, doing toggle!")
                     database.toggleActiveSync(guild_id)
                 activeSyncEnabled = database.isBanSyncGuild(guild_id)
                 await ctx.send("Toggled ActiveSync for the guild with the ID: " + str(guild_id) +

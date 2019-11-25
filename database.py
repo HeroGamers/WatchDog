@@ -213,8 +213,8 @@ class guilds(Model):
 def addBanSyncGuild(guildid, guildname=None, ownerid=None, ownertag=None):
     date = datetime.datetime.now()
     try:
-        guilds.create(GuildID=guildid, GuildName=guildname, OwnerID=ownerid, OwnerTag=ownertag, HasActiveSync=True,
-                      Time=date)
+        guilds.create(GuildID=str(guildid), GuildName=guildname, OwnerID=str(ownerid), OwnerTag=ownertag,
+                      HasActiveSync=True, Time=date)
     except IntegrityError as e:
         logger.logDebug("DB Notice: Guild Already Added To Sync List! - " + str(
             e) + ".", "WARNING")
