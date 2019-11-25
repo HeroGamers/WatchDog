@@ -13,11 +13,12 @@ class serveradministration(commands.Cog):
         async def _addserver(ctx, *args):
             """Enables/disables instant ban-sync on a guild"""
             if database.isModerator(ctx.author.id):
+                logger.logDebug(str(len(args)))
                 if len(args) < 1:
                     guild = ctx.guild
                     guild_id = guild.id
                 else:
-                    guild_id = int(args[1])
+                    guild_id = int(args[0])
                     guild = bot.get_guild(guild_id)
 
                 if not database.isGuildInDB(guild_id):
