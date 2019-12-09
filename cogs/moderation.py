@@ -50,7 +50,7 @@ class Moderation(commands.Cog):
                                inline=True)
             prvembed.add_field(name="In channel", value="%s (`%s`)" % (ctx.channel.name, ctx.channel.id),
                                inline=True)
-            if reason is not None:
+            if (reason is not None) and (reason != ""):
                 prvembed.add_field(name="Reason", value="%s" % reason,
                                    inline=True)
             prvembed.set_footer(text="%s has been globally %s" % (user, text),
