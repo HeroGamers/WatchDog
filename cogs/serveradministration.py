@@ -9,14 +9,19 @@ class serveradministration(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
 
-        @bot.command(name="addserver", aliases=["addbansync", "enablebansync", "removeserver", "togglebansync",
-                                                "bansync", "addguild", "activesync", "toggleactivesync"])
-        async def _addserver(ctx, arg1):
+        @bot.command(name="addserver", aliases=["addbansync", "enablebansync", "removeserver", "togglebansync", "bansync", "addguild", "activesync", "toggleactivesync"])
+        async def _addserver(ctx, *args):
             """Enables/disables instant ban-sync on a guild"""
             if database.isModerator(ctx.author.id):
-                if not database.isGuildInDB(arg1):
-                    guild_id = int(arg1)
+                if len(args) < 1:
+                    guild = ctx.guild
+                    guild_id = guild.id
+                else:
+                    guild_id = int(args[0])
                     guild = bot.get_guild(guild_id)
+
+                if not database.isGuildInDB(guild_id):
+                    logger.logDebug("Guild is not in the database, adding it")
                     name = None
                     ownerid = None
                     ownername = None
@@ -26,11 +31,16 @@ class serveradministration(commands.Cog):
                         ownername = guild.owner.name
                     database.addBanSyncGuild(guild_id, name, ownerid, ownername)
                 else:
-                    database.toggleActiveSync(arg1)
-                await ctx.send("Toggled ActiveSync for the guild with the ID: " + arg1)
+                    logger.logDebug("Guild is already in the database, doing toggle!")
+                    database.toggleActiveSync(guild_id)
+                activeSyncEnabled = database.isBanSyncGuild(guild_id)
+                await ctx.send("Toggled ActiveSync for the guild with the ID: " + str(guild_id) +
+                               "\nActiveSync for the guild is now: " +
+                               ("Enabled!" if activeSyncEnabled else "Disabled!"))
             else:
                 await ctx.send(
                     embed=Embed(color=discord.Color.red(), description="You are not a Global Moderator! Shame!"))
+
 
 def setup(bot):
     bot.add_cog(serveradministration(bot))

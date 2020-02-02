@@ -72,23 +72,15 @@ async def checkAppealGuild():
         await message.add_reaction("✅")
 
 
+
 @bot.event
 async def on_ready():
-    logger.setup_logger()
-
     # Bot startup is now done...
     logger.logDebug("----------[LOGIN SUCESSFULL]----------", "INFO")
     logger.logDebug("     Username: " + bot.user.name, "INFO")
     logger.logDebug("     UserID:   " + str(bot.user.id), "INFO")
     logger.logDebug("--------------------------------------", "INFO")
     print("\n")
-
-    # Load extensions
-    for extension in startup_extensions:
-        try:
-            bot.load_extension(f"cogs.{extension}")
-        except Exception as e:
-            logger.logDebug(f"Failed to load extension {extension}. - {e}", "ERROR")
 
     if os.getenv('testModeEnabled') == "True":
         await logger.log("TESTMODE IS ENABLED! MODERATION ACTIONS WILL NOT HAVE ANY EFFECT!", bot, "DEBUG")
@@ -102,7 +94,7 @@ async def on_ready():
     await checkAppealGuild()
 
     # Bot done starting up
-    await logger.log("Bot startup done.", bot, "INFO", "Bot startup done.\n")
+    await logger.log("Bot is ready!", bot, "INFO", "Bot startup done.\n")
     await bot.change_presence(activity=discord.Game(name="with the banhammer"))
 
 
@@ -183,11 +175,14 @@ async def on_message(message: discord.Message):
         return
 
 
-# if __name__ == '__main__':
-#     # for extension in startup_extensions:
-#     #     try:
-#     #         bot.load_extension(f"cogs.{extension}")
-#     #     except Exception as e:
-#     #         logger.logDebug(f"Failed to load extension {extension}. - {e}", "ERROR")
+if __name__ == '__main__':
+    logger.setup_logger()
+
+    # Load extensions
+    for extension in startup_extensions:
+        try:
+            bot.load_extension(f"cogs.{extension}")
+        except Exception as e:
+            logger.logDebug(f"Failed to load extension {extension}. - {e}", "ERROR")
 
 bot.run(os.getenv('token'))
