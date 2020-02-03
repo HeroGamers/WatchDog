@@ -64,7 +64,7 @@ class Moderation(commands.Cog):
                 database.newBan(userid=user.id, discordtag=user.name + user.discriminator, moderator=ctx.author.id,
                                 reason=reason, guild=ctx.guild.id, avatarurl=user.avatar_url)
 
-        # Function to ban/unban
+        # Function to ban
         async def performBan(ctx, users, reason):
             if isinstance(users, tuple):
                 users = list(users)
