@@ -93,16 +93,16 @@ class Info(commands.Cog):
                 embed_message = await ctx.send(embed=embed)
 
                 inguildwithbot = "No"
+                member = None
                 for guild in bot.guilds:
                     if inguildwithbot == "Yes":
                         break
-                    for member in guild.members:
-                        if user.id == member.id:
-                            inguildwithbot = "Yes"
-                            break
+                    member = guild.get_member(user.id)
+                    if member:
+                        inguildwithbot = "Yes"
+                        break
 
                 if inguildwithbot == "Yes":
-                    status = "Unknown"
                     if str(member.status) == "dnd":
                         status = "Do Not Disturb"
                     elif str(member.status) == "do_not_disturb":

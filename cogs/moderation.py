@@ -64,6 +64,47 @@ class Moderation(commands.Cog):
                 database.newBan(userid=user.id, discordtag=user.name + user.discriminator, moderator=ctx.author.id,
                                 reason=reason, guild=ctx.guild.id, avatarurl=user.avatar_url)
 
+        # Function to ban
+        async def performBan(ctx, users, reason):
+            if isinstance(users, tuple):
+                users = list(users)
+            elif not isinstance(users, list):
+                users = [users]
+
+            # Check all users if they are already banned and stuff
+            usersToBan = []
+            for user in users:
+                if user == ctx.bot.user:
+                    await logger.log("Banning an user failed - given user was the bot", bot, "INFO")
+                elif isModerator(user.id):
+                    await logger.log("Banning an user failed - given user was a Global Moderator", bot, "INFO")
+                elif database.isBanned(user.id):
+                    await logger.log("Banning an user failed - given user was already banned", bot, "INFO")
+                else:
+                    usersToBan.append(user)
+
+            # Ban on current guild
+            for user in usersToBan:
+                # Bans on current guild first
+                try:
+                    await ctx.guild.ban(user, reason="WatchDog - Global Ban")
+                except:
+                    await logger.log("Could not ban the user `%s` (%s) in the guild `%s` (%s)" % (
+                        user.name, user.id, ctx.guild.name, ctx.guild.id), bot, "INFO")
+
+            # Ban on other guilds
+            guilds = [guild for guild in bot.guilds if guild.get_member(user.id)]
+            guilds.append(bot.get_guild(int(os.getenv('banlistguild'))))
+            for user in usersToBan:
+                for guild in guilds:
+                    try:
+                        await guild.ban(user, reason="WatchDog - Global Ban")
+                    except:
+                        await logger.log("Could not ban the user `%s` (%s) in the guild `%s` (%s)" % (
+                            user.name, user.id, guild.name, guild.id), bot, "INFO")
+                # Send private ban notif in private moderator ban list as well as message in botlog
+                await logBan(ctx, user, reason=reason)
+
         # Function used to try and get users from arguments
         async def getUser(ctx, arg):
             if arg.startswith("<@") and arg.endswith(">"):
@@ -121,250 +162,36 @@ class Moderation(commands.Cog):
 
         # Commands #
 
-        @bot.command(name="sync")
-        @commands.guild_only()
-        @commands.bot_has_permissions(ban_members=True)
-        @commands.has_permissions(ban_members=True)
-        async def _sync(ctx):
-            """Sync the bans."""
-            if not database.isBanSyncGuild(ctx.guild.id):
-                await ctx.send("Sorry, but this command is restricted to some guilds, and we doubt that you will need "
-                               "it! If you do feel like you need to sync all the bans, then please do reach out to a "
-                               "Global Moderator on the Support Guild (`" + str(os.getenv('prefix')) + "support`)!")
-                await logger.log("Sync command denied! GuildID: " + str(ctx.guild.id) + " - IsBanSyncGuild: " +
-                                 str(database.isBanSyncGuild(ctx.guild.id)) + " - IsGuildInDB: " + str(database.isGuildInDB(ctx.guild.id)), bot, "DEBUG")
-                return
-            if os.getenv('testModeEnabled') == "True":
-                await logger.log(
-                    "TestMode seems enabled.. ignores ban functions. Check the console/script logs for the full debugging logs!",
-                    bot, "DEBUG")
-            banguild = bot.get_guild(int(os.getenv('banlistguild')))
-            ban_list = await banguild.bans()
-            currentguild_ban_list = await ctx.guild.bans()
-            banCount = 0
-            banCountAll = len(ban_list)
-            percent1 = round((round((banCountAll / 5 * 1), 0) / (banCountAll) * 100), 1)
-            percent2 = round((round((banCountAll / 5 * 2), 0) / (banCountAll) * 100), 1)
-            percent3 = round((round((banCountAll / 5 * 3), 0) / (banCountAll) * 100), 1)
-            percent4 = round((round((banCountAll / 5 * 4), 0) / (banCountAll) * 100), 1)
-            logger.logDebug(
-                "PercentageChecks: " + str(percent1) + ", " + str(percent2) + ", " + str(percent3) + ", " + str(
-                    percent4))
-            messagepercentage = 0
-            embed = discord.Embed(title="Sync in progress...", color=discord.Color.green(),
-                                  description="0% complete! 👌")
-            embed.set_footer(text=ctx.author.name, icon_url=ctx.author.avatar_url)
-            # Causes lag in embed - embed.set_image(url="https://cdn.discordapp.com/attachments/456229881064325131/485934104156569600/happysuccess.gif")
-            embed_message = await ctx.send(embed=embed)
-            for BanEntry in ban_list:
-                banned = False
-
-                for BanEntry2 in currentguild_ban_list:  # Checks if the account already is banned on the guild
-                    if BanEntry2.user.id == BanEntry.user.id:
-                        banCount += 1
-                        # logger.logDebug(str(banCount) + "/" + str(
-                        #     banCountAll) + " User already banned, skipping - " + BanEntry.user.name, "DEBUG")
-                        ban_list_list = list(ban_list)
-                        ban_list_list.remove(BanEntry)
-                        ban_list = tuple(ban_list_list)
-                        # Does the embed change
-                        percentRaw = (banCount / banCountAll) * 100
-                        percent = round(percentRaw, 1)
-                        # logger.logDebug("Percent: " + str(percent), "DEBUG")
-                        if ((percent == percent1) or (percent == percent2) or (percent == percent3) or (
-                                percent == percent4)) and (percent != messagepercentage):
-                            logger.logDebug("Embed update triggered, percent: " + str(percent), "DEBUG")
-                            messagepercentage = percent
-                            embed = discord.Embed(title="Sync in progress...", color=discord.Color.green(),
-                                                  description="%s%% complete! 👌" % percent)
-                            embed.set_footer(text="%s - Global WatchDog Moderator" % ctx.author.name,
-                                             icon_url=ctx.author.avatar_url)
-                            await embed_message.edit(embed=embed)
-                        banned = True
-                        break
-
-                if banned == True:
-                    continue
-                # Check for testMode
-                if os.getenv('testModeEnabled') != "True":
-                    try:
-                        await ctx.guild.ban(BanEntry.user, reason="WatchDog - Global Ban")
-                    except:
-                        await logger.log("Could not syncban the user `%s` (%s) in the guild `%s` (%s)" % (
-                            BanEntry.user.name, BanEntry.user.id, ctx.guild.name, ctx.guild.id), bot, "INFO")
-                else:
-                    logger.logDebug("TestBanned (sync) " + BanEntry.user.name + " (" + str(
-                        BanEntry.user.id) + "), in the guild " + ctx.guild.name + "(" + str(ctx.guild.id) + ")",
-                                    "DEBUG")
-                banCount += 1
-                percentRaw = (banCount / banCountAll) * 100
-                percent = round(percentRaw, 1)
-                logger.logDebug("Percent: " + str(percent), "DEBUG")
-                if ((percent == percent1) or (percent == percent2) or (percent == percent3) or (
-                        percent == percent4)) and (percent != messagepercentage):
-                    messagepercentage = percent
-                    logger.logDebug("Embed update triggered, percent: " + str(percent), "DEBUG")
-                    embed = discord.Embed(title="Sync in progress...", color=discord.Color.green(),
-                                          description="%s%% complete! 👌" % percent)
-                    embed.set_footer(text=ctx.author.name, icon_url=ctx.author.avatar_url)
-                    # Causes lag in embed - embed.set_image(url="https://cdn.discordapp.com/attachments/456229881064325131/485934104156569600/happysuccess.gif")
-                    await embed_message.edit(embed=embed)
-            embed = discord.Embed(title="Sync complete", color=discord.Color.green(),
-                                  description="Synchronisation complete! 👌")
-            embed.set_footer(text=ctx.author.name, icon_url=ctx.author.avatar_url)
-            embed.set_image(
-                url="https://cdn.discordapp.com/attachments/456229881064325131/485934104156569600/happysuccess.gif")
-            await embed_message.edit(embed=embed)
-
         @bot.command(name="revsync", aliases=["reversesync"])
         @commands.guild_only()
         @commands.bot_has_permissions(ban_members=True)
         async def _revsync(ctx):
             """Sync bans from server to central, and other guilds."""
             ban_list = await ctx.guild.bans()
-            banguild = bot.get_guild(int(os.getenv('banlistguild')))
-            banguild_ban_list = await banguild.bans()
             if isModerator(ctx.author.id):
                 if not await confirmAction(ctx, "revsync"):
                     await ctx.send("You took too long to respond, or didn't respond with the correct message...\n" +
                                    "Try again?")
                     return
-                if os.getenv('testModeEnabled') == "True":
-                    await logger.log(
-                        "TestMode seems enabled.. ignores ban functions. Check the console/script logs for the full debugging logs!",
-                        bot, "DEBUG")
-                banCount = 0
                 banCountAll = len(ban_list)
                 if banCountAll == 0:
                     await ctx.send("Sorry, but the guild doesn't have any bans!")
                     return
-                percent1 = round((round((banCountAll / 5 * 1), 0) / (banCountAll) * 100), 1)
-                percent2 = round((round((banCountAll / 5 * 2), 0) / (banCountAll) * 100), 1)
-                percent3 = round((round((banCountAll / 5 * 3), 0) / (banCountAll) * 100), 1)
-                percent4 = round((round((banCountAll / 5 * 4), 0) / (banCountAll) * 100), 1)
-                logger.logDebug(
-                    "PercentageChecks: " + str(percent1) + ", " + str(percent2) + ", " + str(percent3) + ", " + str(
-                        percent4))
-                messagepercentage = 0
+
+                users = []
+                for BanEntry in ban_list:
+                    users.append(BanEntry.user)
+
                 embed = discord.Embed(title="Revsync in progress...", color=discord.Color.green(),
-                                      description="0% complete! 👌")
+                                      description="Whoo! Here we goo! Don't worry, the bans are working very hard to "
+                                                  "reversibly synchronize! 👌")
                 embed.set_footer(text="%s - Global WatchDog Moderator" % ctx.author.name,
                                  icon_url=ctx.author.avatar_url)
-                # Causes lag in embed - embed.set_image(url="https://cdn.discordapp.com/attachments/485619099481800714/485917795679338496/1521567278_980x.gif")
                 embed_message = await ctx.send(embed=embed)
 
-                for BanEntry in ban_list:
-                    banned = False
+                # Perform the bans
+                await performBan(ctx, users, "Revsync from " + ctx.guild.name + " (" + str(ctx.guild.id) + ")")
 
-                    if database.isBanned(BanEntry.user.id):
-                        banCount += 1
-                        logger.logDebug(str(banCount) + "/" + str(
-                            banCountAll) + " User already banned, skipping - " + BanEntry.user.name, "DEBUG")
-                        ban_list_list = list(ban_list)
-                        ban_list_list.remove(BanEntry)
-                        ban_list = tuple(ban_list_list)
-                        # Does the embed change
-                        percentRaw = (banCount / banCountAll) * 100
-                        percent = round(percentRaw, 1)
-                        logger.logDebug("Percent: " + str(percent), "DEBUG")
-                        if ((percent == percent1) or (percent == percent2) or (percent == percent3) or (
-                                percent == percent4)) and (percent != messagepercentage):
-                            messagepercentage = percent
-                            logger.logDebug("Embed update triggered, percent: " + str(percent), "DEBUG")
-                            embed = discord.Embed(title="Revsync in progress...", color=discord.Color.green(),
-                                                  description="%s%% complete! 👌" % percent)
-                            embed.set_footer(text="%s - Global WatchDog Moderator" % ctx.author.name,
-                                             icon_url=ctx.author.avatar_url)
-                            await embed_message.edit(embed=embed)
-                        banned = True
-                        continue
-                    if banned:
-                        continue
-                    elif BanEntry.user == ctx.bot.user:
-                        await logger.log(
-                            "Someone tried to ban the bot during a revsync. Moderator: `%s` (%s) in the guild `%s` (%s)" % (
-                                ctx.author.name, ctx.author.id, ctx.guild.name, ctx.guild.id), bot, "WARNING")
-
-                        ban_list_list = list(ban_list)
-                        ban_list_list.remove(BanEntry)
-                        ban_list = tuple(ban_list_list)
-                        continue
-                    elif isModerator(BanEntry.user.id):
-                        await logger.log(
-                            "Someone tried to ban a Global Moderator during a revsync. Moderator: `%s` (%s) in the guild `%s` (%s)" % (
-                                ctx.author.name, ctx.author.id, ctx.guild.name, ctx.guild.id), bot, "WARNING")
-
-                        ban_list_list = list(ban_list)
-                        ban_list_list.remove(BanEntry)
-                        ban_list = tuple(ban_list_list)
-                        continue
-                    else:
-                        banCount += 1
-                        logger.logDebug(str(banCount) + "/" + str(
-                            banCountAll) + " User not banned, banning - " + BanEntry.user.name, "DEBUG")
-                        # checks other guilds
-                        # Gets all guilds, to see if the user is in any of them. If the user is, then add that guild
-                        # to the list of guilds to ban the user from
-                        guilds = []
-                        for guild in bot.guilds:
-                            if guild.get_member(BanEntry.user.id) is not None:
-                                guilds.append(guild.id)
-                        # Add the guilds that we ban sync
-                        bansyncguilds = database.getBanSyncGuilds()
-                        for guild in bansyncguilds:
-                            guilds.append(int(guild.GuildID))
-                        # And remove dupes
-                        guilds = list(dict.fromkeys(guilds))
-                        # To be safe, check to see and remove the appeal server... has happened before
-                        try:
-                            guilds.remove(int(os.getenv('appealguild')))
-                            logger.logDebug("Appeal guild was in mutals...")
-                        except Exception:
-                            logger.logDebug("Appeal guild not in mutals...")
-                        for guildID in guilds:
-                            guild = bot.get_guild(int(guildID))
-                            if guild is None:  # Check if guild is none
-                                await logger.log("Guild is none... GuildID: " + str(guildID), bot, "ERROR")
-                                continue
-                            # checks if own guild, if it is, skip
-                            if guild != ctx.guild:
-                                # Check for testMode
-                                if os.getenv('testModeEnabled') != "True":
-                                    # tries to ban
-                                    try:
-                                        await guild.ban(BanEntry.user, reason="WatchDog - Global Ban")
-                                    except:
-                                        await logger.log(
-                                            "Could not revsyncban the user `%s` (%s) in the guild `%s` (%s)" % (
-                                                BanEntry.user.name, BanEntry.user.id, guild.name, guild.id), bot,
-                                            "INFO")
-                                else:
-                                    logger.logDebug("TestBanned (revsync) " + BanEntry.user.name + " (" + str(
-                                        BanEntry.user.id) + "), in the guild " + guild.name + "(" + str(guild.id) + ")",
-                                                    "DEBUG")
-                        # Does the embed change
-                        percentRaw = (banCount / banCountAll) * 100
-                        percent = round(percentRaw, 1)
-                        logger.logDebug("Percent: " + str(percent), "DEBUG")
-                        if ((percent == percent1) or (percent == percent2) or (percent == percent3) or (
-                                percent == percent4)) and (percent != messagepercentage):
-                            messagepercentage = percent
-                            logger.logDebug("Embed update triggered, percent: " + str(percent), "DEBUG")
-                            embed = discord.Embed(title="Revsync in progress...", color=discord.Color.green(),
-                                                  description="%s%% complete! 👌" % percent)
-                            embed.set_footer(text="%s - Global WatchDog Moderator" % ctx.author.name,
-                                             icon_url=ctx.author.avatar_url)
-                            await embed_message.edit(embed=embed)
-                        # Do this when done
-                        # Check for testMode
-                        if os.getenv('testModeEnabled') != "True":
-                            # Send private ban notif in private moderator ban list as well as message in botlog
-                            await logBan(ctx, BanEntry.user, reason="Revsync from " + ctx.guild.name +
-                                                                    " (" + str(ctx.guild.id) + ")")
-                        else:
-                            logger.logDebug(
-                                "TestSent (unban) embeds and prvlist notif for " + BanEntry.user.name + " (" + str(
-                                    BanEntry.user.id) + ")", "DEBUG")
                 # send final embed, telling the ban was sucessful
                 if len(ban_list) == 1:
                     desc_string = "Reverse synchronisation complete! %s account has been globally banned 👌" % len(
@@ -388,10 +215,6 @@ class Moderation(commands.Cog):
         async def _ban(ctx, arg1, *args, reason="WatchDog - Global Ban"):
             """Bans a user globally."""
             if isModerator(ctx.author.id):
-                if os.getenv('testModeEnabled') == "True":
-                    await logger.log(
-                        "TestMode seems enabled.. ignores ban functions. Check the console/script logs for the full debugging logs!",
-                        bot, "DEBUG")
                 try:
                     user = await getUser(ctx, arg1)
                 except Exception as e:
@@ -399,135 +222,41 @@ class Moderation(commands.Cog):
                     await logger.log("Could not get a specified user - Specified arg: %s - Error: %s" % (arg1, e), bot,
                                      "ERROR")
                     return
-                if user == ctx.bot.user:
-                    await ctx.send(
-                        embed=Embed(color=discord.Color.red(), description="What are you trying to do? Shame!"))
-                elif isModerator(user.id):
-                    await ctx.send(
-                        embed=Embed(color=discord.Color.red(), description="You cannot ban a Global Moderator, sorry!"))
-                else:
-                    if database.isBanned(user.id):
-                        await ctx.send(
-                            embed=Embed(color=discord.Color.red(), description="That user has already been banned!"))
-                    else:
-                        # Bans on current used guild first
-                        # Check for testMode
-                        if os.getenv('testModeEnabled') != "True":
-                            # Priorize banning all accounts on own guild
-                            # tries to ban
-                            try:
-                                await ctx.guild.ban(user, reason="WatchDog - Global Ban")
-                            except:
-                                await logger.log("Could not ban the user `%s` (%s) in the guild `%s` (%s)" % (
-                                    user.name, user.id, ctx.guild.name, ctx.guild.id), bot, "INFO")
-                        else:
-                            logger.logDebug("TestBanned (ban) " + user.name + " (" + str(
-                                user.id) + "), in the guild " + ctx.guild.name + "(" + str(ctx.guild.id) + ")",
-                                            "DEBUG")
 
-                        # Sends main embed
-                        guildCount = 0
-                        # Gets all guilds, to see if the user is in any of them. If the user is, then add that guild
-                        # to the list of guilds to ban the user from
-                        guilds = []
-                        for guild in bot.guilds:
-                            if guild.get_member(user.id) is not None:
-                               guilds.append(guild.id)
-                        # Add the guilds that we ban sync
-                        bansyncguilds = database.getBanSyncGuilds()
-                        for guild in bansyncguilds:
-                            guilds.append(int(guild.GuildID))
-                        # And remove dupes
-                        guilds = list(dict.fromkeys(guilds))
-                        # To be safe, check to see and remove the appeal server... has happened before
-                        try:
-                            guilds.remove(int(os.getenv('appealguild')))
-                            logger.logDebug("Appeal guild was in mutals...")
-                        except Exception:
-                            logger.logDebug("Appeal guild not in mutals...")
-                        if len(guilds) >= 1:
-                            guildCountAll = len(guilds)
-                            percent1 = round((round((guildCountAll / 5 * 1), 0) / (guildCountAll) * 100), 1)
-                            percent2 = round((round((guildCountAll / 5 * 2), 0) / (guildCountAll) * 100), 1)
-                            percent3 = round((round((guildCountAll / 5 * 3), 0) / (guildCountAll) * 100), 1)
-                            percent4 = round((round((guildCountAll / 5 * 4), 0) / (guildCountAll) * 100), 1)
-                            logger.logDebug("PercentageChecks: " + str(percent1) + ", " + str(percent2) + ", " + str(
-                                percent3) + ", " + str(percent4))
-                            messagepercentage = 0
-                            embed = discord.Embed(title="Account is being banned...", color=discord.Color.green(),
-                                                  description="0% complete! 👌")
-                            embed.set_footer(text="%s - Global WatchDog Moderator" % ctx.author.name,
-                                             icon_url=ctx.author.avatar_url)
-                            # Causes lag in embed - embed.set_image(url="https://cdn.discordapp.com/attachments/456229881064325131/475498849696219141/ban.gif")
-                            embed_message = await ctx.send(embed=embed)
-                            # checks guilds
-                            for guildID in guilds:
-                                guild = bot.get_guild(int(guildID))
-                                if guild is None:  # Check if guild is none
-                                    await logger.log("Guild is none... GuildID: " + str(guildID), bot, "ERROR")
-                                    continue
-                                # Check for testMode
-                                if os.getenv('testModeEnabled') != "True":
-                                    # tries to ban
-                                    try:
-                                        await guild.ban(user, reason="WatchDog - Global Ban")
-                                        await logger.log("Banned user " + user.name + " in the guild " + guild.name,
-                                                         bot, "DEBUG")
-                                    except:
-                                        await logger.log("Could not ban the user `%s` (%s) in the guild `%s` (%s)" % (
-                                            user.name, user.id, guild.name, guild.id), bot, "INFO")
-                                else:
-                                    logger.logDebug("TestBanned (ban) " + user.name + " (" + str(
-                                        user.id) + "), in the guild " + guild.name + "(" + str(guild.id) + ")", "DEBUG")
-                                # Does the embed change
-                                guildCount += 1
-                                percentRaw = (guildCount / guildCountAll) * 100
-                                percent = round(percentRaw, 1)
-                                logger.logDebug("Percent: " + str(percent), "DEBUG")
-                                if ((percent == percent1) or (percent == percent2) or (percent == percent3) or (
-                                        percent == percent4)) and (percent != messagepercentage):
-                                    messagepercentage = percent
-                                    logger.logDebug("Embed update triggered, percent: " + str(percent), "DEBUG")
-                                    embed = discord.Embed(title="Account is being banned...", color=discord.Color.green(),
-                                                          description="%s%% complete! 👌" % percent)
-                                    embed.set_footer(text="%s - Global WatchDog Moderator" % ctx.author.name,
-                                                     icon_url=ctx.author.avatar_url)
-                                    await embed_message.edit(embed=embed)
-                        # Do this when done
-                        # Check for testMode
-                        if os.getenv('testModeEnabled') != "True":
-                            # Get the ban reason, if there is any
-                            banreason = None
-                            if len(args) > 1:
-                                logger.logDebug("More than 1 argument given on ban command, getting banreason")
-                                banreason = ' '.join(args)
-                                logger.logDebug("Banreason: " + banreason)
-                            # Send private ban notif in private moderator ban list as well as message in botlog
-                            await logBan(ctx, user, reason=banreason)
-                        else:
-                            logger.logDebug("TestSent (unban) embeds and prvlist notif for " + user.name + " (" + str(
-                                user.id) + ")", "DEBUG")
-                        # send final embed, telling the ban was sucessful
-                        embed = discord.Embed(title="Account banned", color=discord.Color.green(),
-                                              description="`%s` has been globally banned 👌" % user)
-                        embed.set_footer(text="%s - Global WatchDog Moderator" % ctx.author.name,
-                                         icon_url=ctx.author.avatar_url)
-                        embed.set_image(
-                            url="https://cdn.discordapp.com/attachments/456229881064325131/475498849696219141/ban.gif")
-                        await embed_message.edit(embed=embed)
+                # Get the ban reason, if there is any
+                banreason = None
+                if len(args) > 1:
+                    logger.logDebug("More than 1 argument given on ban command, getting banreason")
+                    banreason = ' '.join(args)
+                    logger.logDebug("Banreason: " + banreason)
+
+                # Sends main embed
+                embed = discord.Embed(title="Account is being banned...", color=discord.Color.green(),
+                                      description="The ban is happening! Woah there! 👌")
+                embed.set_footer(text="%s - Global WatchDog Moderator" % ctx.author.name,
+                                 icon_url=ctx.author.avatar_url)
+                embed_message = await ctx.send(embed=embed)
+
+                # Perform the ban
+                await performBan(ctx, user, reason)
+
+                # Do this when done
+                # send final embed, telling the ban was sucessful
+                embed = discord.Embed(title="Account banned", color=discord.Color.green(),
+                                      description="`%s` has been globally banned 👌" % user)
+                embed.set_footer(text="%s - Global WatchDog Moderator" % ctx.author.name,
+                                 icon_url=ctx.author.avatar_url)
+                embed.set_image(
+                    url="https://cdn.discordapp.com/attachments/456229881064325131/475498849696219141/ban.gif")
+                await embed_message.edit(embed=embed)
             else:
                 await ctx.send(
                     embed=Embed(color=discord.Color.red(), description="You are not a Global Moderator! Shame!"))
 
         @bot.command(name="unban")
-        async def _unban(ctx, arg1, *, reason="WatchDog - Global Unban"):
+        async def _unban(ctx, arg1):
             """Unbans a user globally."""
             if isModerator(ctx.author.id):
-                if os.getenv('testModeEnabled') == "True":
-                    await logger.log(
-                        "TestMode seems enabled.. ignores unban functions. Check the console/script logs for the full debugging logs!",
-                        bot, "DEBUG")
-
                 try:
                     user = await getUser(ctx, arg1)
                 except Exception as e:
@@ -539,80 +268,41 @@ class Moderation(commands.Cog):
                 if not database.isBanned(user.id):
                     return
 
-                guildCount = 0
                 guilds = bot.guilds
                 if len(guilds) >= 1:
-                    guildCountAll = len(guilds)
-                    percent1 = round((round((guildCountAll / 5 * 1), 0) / (guildCountAll) * 100), 1)
-                    percent2 = round((round((guildCountAll / 5 * 2), 0) / (guildCountAll) * 100), 1)
-                    percent3 = round((round((guildCountAll / 5 * 3), 0) / (guildCountAll) * 100), 1)
-                    percent4 = round((round((guildCountAll / 5 * 4), 0) / (guildCountAll) * 100), 1)
-                    logger.logDebug(
-                        "PercentageChecks: " + str(percent1) + ", " + str(percent2) + ", " + str(percent3) + ", " + str(
-                            percent4))
-                    messagepercentage = 0
                     embed = discord.Embed(title="Account is being unbanned...", color=discord.Color.green(),
                                           description="0% complete! 👌")
                     embed.set_footer(text="%s - Global WatchDog Moderator" % ctx.author.name,
                                      icon_url=ctx.author.avatar_url)
-                    # Causes lag in embed - embed.set_image(url="https://cdn.discordapp.com/attachments/456229881064325131/475498943178866689/unban.gif")
                     embed_message = await ctx.send(embed=embed)
                     for guild in guilds:
                         if guild is None:  # Check if guild is none
                             await logger.log("Guild is none... GuildID: " + guild.id, bot, "ERROR")
                             continue
-                        # Check for testMode
-                        if os.getenv('testModeEnabled') != "True":
-                            try:
-                                await guild.unban(user, reason="WatchDog - Global Unban")
-                            except:
-                                await logger.log("Could not unban the user `%s` (%s) in the guild `%s` (%s)" % (
-                                    user.name, user.id, guild.name, guild.id), bot, "INFO")
-                        else:
-                            logger.logDebug("TestUnBanned (unban) " + user.name + " (" + str(
-                                user.id) + "), in the guild " + guild.name + "(" + str(guild.id) + ")", "DEBUG")
-                        guildCount += 1
-                        percentRaw = (guildCount / guildCountAll) * 100
-                        percent = round(percentRaw, 1)
-                        logger.logDebug("Percent: " + str(percent), "DEBUG")
-                        if ((percent == percent1) or (percent == percent2) or (percent == percent3) or (
-                                percent == percent4)) and (percent != messagepercentage):
-                            messagepercentage = percent
-                            logger.logDebug("Embed update triggered, percent: " + str(percent), "DEBUG")
-                            embed = discord.Embed(title="Account is being unbanned...", color=discord.Color.green(),
-                                                  description="%s%% complete! 👌" % percent)
-                            embed.set_footer(text="%s - Global WatchDog Moderator" % ctx.author.name,
-                                             icon_url=ctx.author.avatar_url)
-                            await embed_message.edit(embed=embed)
-                # do this when done
-                # Check for testMode
-                if os.getenv('testModeEnabled') != "True":
+                        try:
+                            await guild.unban(user, reason="WatchDog - Global Unban")
+                        except:
+                            await logger.log("Could not unban the user `%s` (%s) in the guild `%s` (%s)" % (
+                                user.name, user.id, guild.name, guild.id), bot, "DEBUG")
+                    # do this when done
                     # Send private ban notif in private moderator ban list as well as message in botlog
                     await logBan(ctx, user, unban=True)
-                else:
-                    logger.logDebug(
-                        "TestSent (unban) embeds and prvlist notif for " + user.name + " (" + str(user.id) + ")",
-                        "DEBUG")
-                # edits final embed
-                embed = discord.Embed(title="Account unbanned", color=discord.Color.green(),
-                                      description="`%s` has been globally unbanned 👌" % user)
-                embed.set_footer(text="%s - Global WatchDog Moderator" % ctx.author.name,
-                                 icon_url=ctx.author.avatar_url)
-                embed.set_image(
-                    url="https://cdn.discordapp.com/attachments/456229881064325131/475498943178866689/unban.gif")
-                await embed_message.edit(embed=embed)
+                    # edits final embed
+                    embed = discord.Embed(title="Account unbanned", color=discord.Color.green(),
+                                          description="`%s` has been globally unbanned 👌" % user)
+                    embed.set_footer(text="%s - Global WatchDog Moderator" % ctx.author.name,
+                                     icon_url=ctx.author.avatar_url)
+                    embed.set_image(
+                        url="https://cdn.discordapp.com/attachments/456229881064325131/475498943178866689/unban.gif")
+                    await embed_message.edit(embed=embed)
             else:
                 await ctx.send(
                     embed=Embed(color=discord.Color.red(), description="You are not a Global Moderator! Shame!"))
 
         @bot.command(name="mban", aliases=["multipleban"])
-        async def _mban(ctx, *args, reason="WatchDog - Global Ban"):
+        async def _mban(ctx, *args):
             """Bans multiple users globally."""
             if isModerator(ctx.author.id):
-                if os.getenv('testModeEnabled') == "True":
-                    await logger.log(
-                        "TestMode seems enabled.. ignores ban functions. Check the console/script logs for the full debugging logs!",
-                        bot, "DEBUG")
                 # remove dupes
                 args = list(dict.fromkeys(args))
                 # sort the args into users and reason
@@ -622,174 +312,26 @@ class Moderation(commands.Cog):
                 print(users)
                 reason = sortedargs[1]
                 print(reason)
-                # count args
-                argCountAll = len(users)
-                percent1 = round((round((argCountAll / 5 * 1), 0) / (argCountAll) * 100), 1)
-                percent2 = round((round((argCountAll / 5 * 2), 0) / (argCountAll) * 100), 1)
-                percent3 = round((round((argCountAll / 5 * 3), 0) / (argCountAll) * 100), 1)
-                percent4 = round((round((argCountAll / 5 * 4), 0) / (argCountAll) * 100), 1)
-                logger.logDebug(
-                    "PercentageChecks: " + str(percent1) + ", " + str(percent2) + ", " + str(percent3) + ", " + str(
-                        percent4))
-                messagepercentage = 0
-                if argCountAll == 0:
-                    return
-                else:
-                    # Sends main embed
-                    argCount = 0
-                    embed = discord.Embed(title="Accounts are being banned...", color=discord.Color.green(),
-                                          description="0% complete! 👌")
-                    embed.set_footer(text="%s - Global WatchDog Moderator" % ctx.author.name,
-                                     icon_url=ctx.author.avatar_url)
-                    embed_message = await ctx.send(embed=embed)
-                    # ban on own guild
-                    for user in users:
-                        if user == ctx.bot.user:
-                            await ctx.send(
-                                embed=Embed(color=discord.Color.red(), description="ID of bot was found in list!"))
-                            argslist = list(users)
-                            argslist.remove(user)
-                            users = tuple(argslist)
-                            continue
-                        elif isModerator(user.id):
-                            await ctx.send(embed=Embed(color=discord.Color.red(),
-                                                       description="ID of Global Moderator was found in list!"))
-                            argslist = list(users)
-                            argslist.remove(user)
-                            users = tuple(argslist)
-                            continue
-                        else:
-                            # Check for testMode
-                            if os.getenv('testModeEnabled') != "True":
-                                # Priorize banning all accounts on own guild
-                                # tries to ban
-                                try:
-                                    await ctx.guild.ban(user, reason="WatchDog - Global Ban")
-                                except:
-                                    await logger.log("Could not ban the user `%s` (%s) in the guild `%s` (%s)" % (
-                                        user.name, user.id, ctx.guild.name, ctx.guild.id), bot, "INFO")
-                            else:
-                                logger.logDebug("TestBanned (mban) " + user.name + " (" + str(
-                                    user.id) + "), in the guild " + ctx.guild.name + "(" + str(ctx.guild.id) + ")",
-                                                "DEBUG")
-                    # ban on all other guilds
-                    for user in users:
-                        banned = False
 
-                        if database.isBanned(user.id):
-                            logger.logDebug("User already banned, skipping - " + user.name, "DEBUG")
-                            argslist = list(users)
-                            argslist.remove(user)
-                            users = tuple(argslist)
-                            # Does the embed change
-                            percentRaw = (argCount / argCountAll) * 100
-                            percent = round(percentRaw, 1)
-                            logger.logDebug("Percent: " + str(percent), "DEBUG")
-                            if ((percent == percent1) or (percent == percent2) or (percent == percent3) or (
-                                    percent == percent4)) and (percent != messagepercentage):
-                                messagepercentage = percent
-                                logger.logDebug("Embed update triggered, percent: " + str(percent), "DEBUG")
-                                embed = discord.Embed(title="Accounts are being banned...",
-                                                      color=discord.Color.green(),
-                                                      description="%s%% complete! 👌" % percent)
-                                embed.set_footer(text="%s - Global WatchDog Moderator" % ctx.author.name,
-                                                 icon_url=ctx.author.avatar_url)
-                                await embed_message.edit(embed=embed)
-                            banned = True
-                            break
+                # Sends main embed
+                embed = discord.Embed(title="Accounts are being banned...", color=discord.Color.green(),
+                                      description="The bans are happening! Woah there! 👌")
+                embed.set_footer(text="%s - Global WatchDog Moderator" % ctx.author.name,
+                                 icon_url=ctx.author.avatar_url)
+                embed_message = await ctx.send(embed=embed)
 
-                        if banned:
-                            argCount += 1
-                            continue
-                        elif user == ctx.bot.user:
-                            argCount += 1
-                            argslist = list(users)
-                            argslist.remove(user)
-                            users = tuple(argslist)
-                            continue
-                        elif isModerator(user.id):
-                            argCount += 1
-                            argslist = list(users)
-                            argslist.remove(user)
-                            users = tuple(argslist)
-                            continue
-                        else:
-                            # checks other guilds
-                            # Gets all guilds, to see if the user is in any of them. If the user is, then add that guild
-                            # to the list of guilds to ban the user from
-                            guilds = []
-                            for guild in bot.guilds:
-                                if guild.get_member(user.id) is not None:
-                                    guilds.append(guild.id)
-                            # Add the guilds that we ban sync
-                            bansyncguilds = database.getBanSyncGuilds()
-                            for guild in bansyncguilds:
-                                guilds.append(int(guild.GuildID))
-                            # And remove dupes
-                            guilds = list(dict.fromkeys(guilds))
-                            # To be safe, check to see and remove the appeal server... has happened before
-                            try:
-                                guilds.remove(int(os.getenv('appealguild')))
-                                logger.logDebug("Appeal guild was in mutals...")
-                            except Exception:
-                                logger.logDebug("Appeal guild not in mutals...")
-                            for guildID in guilds:
-                                guild = bot.get_guild(int(guildID))
-                                if guild is None:  # Check if guild is none
-                                    await logger.log("Guild is none... GuildID: " + str(guildID), bot, "ERROR")
-                                    continue
+                # Perform the bans
+                await performBan(ctx, users, reason)
 
-                                # checks if own guild, if it is, skip
-                                if guild != ctx.guild:
-                                    # Check for testMode
-                                    if os.getenv('testModeEnabled') != "True":
-                                        # tries to ban
-                                        try:
-                                            await guild.ban(user, reason="WatchDog - Global Ban")
-                                        except Exception as e:
-                                            await logger.log(
-                                                "Could not ban the user `%s` (%s) in the guild `%s` (%s) - %s" % (
-                                                    user.name, user.id, guild.name, guild.id, e), bot, "INFO")
-                                    else:
-                                        logger.logDebug("TestBanned (mban) " + user.name + " (" + str(
-                                            user.id) + "), in the guild " + guild.name + "(" + str(guild.id) + ")",
-                                                        "DEBUG")
-                            # Does the embed change
-                            argCount += 1
-                            percentRaw = (argCount / argCountAll) * 100
-                            percent = round(percentRaw, 1)
-                            logger.logDebug("Percent: " + str(percent), "DEBUG")
-                            if ((percent == percent1) or (percent == percent2) or (percent == percent3) or (
-                                    percent == percent4)) and (percent != messagepercentage):
-                                messagepercentage = percent
-                                logger.logDebug("Embed update triggered, percent: " + str(percent), "DEBUG")
-                                embed = discord.Embed(title="Accounts are being banned...", color=discord.Color.green(),
-                                                      description="%s%% complete! 👌" % percent)
-                                embed.set_footer(text="%s - Global WatchDog Moderator" % ctx.author.name,
-                                                 icon_url=ctx.author.avatar_url)
-                                await embed_message.edit(embed=embed)
-                            # Do this when done
-                            # Check for testMode
-                            if os.getenv('testModeEnabled') != "True":
-                                # Send private ban notif in private moderator ban list as well as message in botlog
-                                await logBan(ctx, user, reason=reason)
-                            else:
-                                logger.logDebug(
-                                    "TestSent (mban) embeds and prvlist notif for " + user.name + " (" + str(
-                                        user.id) + ")", "DEBUG")
-                    # send final embed, telling the ban was sucessful
-                    if len(users) == 1:
-                        desc_string = "%s account has been globally banned 👌" % len(users)
-                    else:
-                        desc_string = "%s accounts have been globally banned 👌" % len(users)
-
-                    embed = discord.Embed(title="Accounts banned", color=discord.Color.green(),
-                                          description=desc_string)
-                    embed.set_footer(text="%s - Global WatchDog Moderator" % ctx.author.name,
-                                     icon_url=ctx.author.avatar_url)
-                    embed.set_image(
-                        url="https://cdn.discordapp.com/attachments/456229881064325131/475498849696219141/ban.gif")
-                    await embed_message.edit(embed=embed)
+                # Do this when done
+                # send final embed, telling the ban was sucessful
+                embed = discord.Embed(title="Accounts banned", color=discord.Color.green(),
+                                      description="All the accounts have been globally banned 👌")
+                embed.set_footer(text="%s - Global WatchDog Moderator" % ctx.author.name,
+                                 icon_url=ctx.author.avatar_url)
+                embed.set_image(
+                    url="https://cdn.discordapp.com/attachments/456229881064325131/475498849696219141/ban.gif")
+                await embed_message.edit(embed=embed)
             else:
                 await ctx.send(
                     embed=Embed(color=discord.Color.red(), description="You are not a Global Moderator! Shame!"))

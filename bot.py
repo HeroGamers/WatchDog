@@ -1,6 +1,6 @@
 import discord
 from discord.ext import commands
-from discord import Embed
+from discord import Embed, Permissions
 from Util import logger
 import os
 import database
@@ -32,10 +32,6 @@ async def updateDatabase():
         if not database.isBanned(BanEntry.user.id):
             database.newBan(userid=BanEntry.user.id, discordtag=BanEntry.user.name + "#" + BanEntry.user.discriminator,
                             avatarurl=BanEntry.user.avatar_url)
-    # Make sure the banlistguild is under sync-bans guilds
-    if not database.isBanSyncGuild(banguild.id):
-        database.addBanSyncGuild(banguild.id, banguild.name, banguild.owner.id, banguild.owner.name + "#" +
-                                 banguild.owner.discriminator)
 
 
 # Make sure appeal guild is set up properly
@@ -82,12 +78,10 @@ async def on_ready():
     logger.logDebug("--------------------------------------", "INFO")
     print("\n")
 
-    if os.getenv('testModeEnabled') == "True":
-        await logger.log("TESTMODE IS ENABLED! MODERATION ACTIONS WILL NOT HAVE ANY EFFECT!", bot, "DEBUG")
-    else:
-        logger.logDebug("Updating the database!", "INFO")
-        await updateDatabase()
-        logger.logDebug("Done updating the database!", "INFO")
+
+    logger.logDebug("Updating the database!", "INFO")
+    await updateDatabase()
+    logger.logDebug("Done updating the database!", "INFO")
     print("\n")
 
     # Ban appeal server setup
@@ -126,34 +120,17 @@ async def on_command_error(ctx: commands.Context, error):
 @bot.event
 async def on_guild_join(guild):
     await logger.log("Joined a new guild (`%s` - `%s`)" % (guild.name, guild.id), bot, "INFO")
-    if database.isBanSyncGuild(guild.id):
-        banguild = bot.get_guild(int(os.getenv('banlistguild')))
-        ban_list = await banguild.bans()
-        sucess = "True"
-        sucessedbans = 0
-        banned = 0
-        bans = len(ban_list)
-        for BanEntry in ban_list:
-            if (banned == 5) and (sucessedbans == 0):
-                await logger.log("Could not syncban the first 5 accounts in the guild `%s` (%s). Stopping sync." % (
-                    guild.name, guild.id), bot, "INFO")
-                break
-            try:
-                await guild.ban(BanEntry.user, reason=f"WatchDog - Global Ban")
-                sucess = "True"
-                sucessedbans += 1
-            except Exception as e:
-                logger.logDebug("Could not syncban the user `%s` (%s) in the guild `%s` (%s) - %s" % (
-                    BanEntry.user.name, str(BanEntry.user.id), guild.name, str(guild.id), e), "INFO")
-                sucess = "False"
-            banned += 1
-            logger.logDebug(
-                str(banned) + "/" + str(bans) + " Syncbanned (new guild join) the user `%s` (%s) - Sucess: %s" % (
-                    BanEntry.user.name, str(BanEntry.user.id), sucess), "DEBUG")
-        await logger.log("Synced all bans to the guild `%s` (%s)!" % (guild.name, guild.id), bot, "INFO")
-        logger.logDebug(
-            "Sucessfully banned " + str(sucessedbans) + "/" + str(bans) + " accounts, in the guild %s (%s)" % (
-                guild.name, str(guild.id)), "DEBUG")
+    # Check the bot's ban permission
+    if Permissions.ban_members in guild.get_member(bot.user.id).guild_permissions:
+        # Get bans from db
+        bans = database.getBans()
+        # make new list for userid in bans, if member is in guild
+        ban_members = [userid for userid in bans if guild.get_member(userid)]
+        logger.logDebug(str(ban_members))
+        # Ban the found users
+        for userid in ban_members:
+            await guild.ban(bot.get_user(int(userid)), reason="WatchDog - Global Ban")
+            logger.logDebug("Banned user in guild hahayes")
 
 
 @bot.event
