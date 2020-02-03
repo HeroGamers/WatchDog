@@ -3,7 +3,6 @@
 
 [![Codacy Badge](https://api.codacy.com/project/badge/Grade/b8869fc694fb422face151594faf177f)](https://www.codacy.com/app/Fido2603/WatchDog?utm_source=github.com&amp;utm_medium=referral&amp;utm_content=Fido2603/WatchDog&amp;utm_campaign=Badge_Grade)
 [![Maintainability](https://api.codeclimate.com/v1/badges/5aef388650398035970a/maintainability)](https://codeclimate.com/github/Fido2603/WatchDog/maintainability)
-[![Build Status](https://travis-ci.com/Fido2603/WatchDog.svg?branch=master)](https://travis-ci.com/Fido2603/WatchDog)
 [![Made With Python 3.6.6](https://img.shields.io/badge/Python-3.6.6-blue.svg)](https://www.python.org/downloads/release/python-366/)
 [![Made With discord.py 1.2.2](https://img.shields.io/badge/discord.py-1.2.5-blue.svg)](https://github.com/Rapptz/discord.py)
 [![MIT license](https://img.shields.io/badge/License-MIT-blue.svg)](https://raw.githubusercontent.com/Fido2603/WatchDog/master/LICENSE)
