@@ -92,6 +92,12 @@ def isBanned(userid):
     return False
 
 
+# Gets all the bans
+def getBans():
+    query = bans.select().where(bans.IsActive == True)
+    return query
+
+
 # --------------------------------------------------- BAN APPEALS ---------------------------------------------------- #
 
 
@@ -193,73 +199,12 @@ def updateBanAppealStatus(userid, boolean, moderator):
     query.execute()
 
 
-# ------------------------------------------------------ GUILDS ------------------------------------------------------ #
-
-
-# Table for the servers where instant ban-sync is enabled
-class guilds(Model):
-    GuildID = CharField(unique=True, max_length=snowflake_max_length)
-    GuildName = CharField(null=True, max_length=guildname_max_length)
-    OwnerID = CharField(null=True, max_length=snowflake_max_length)
-    OwnerTag = CharField(null=True, max_length=discordtag_max_length)
-    HasActiveSync = BooleanField()
-    Time = DateTimeField()
-
-    class Meta:
-        database = db
-
-
-# Add a guild
-def addBanSyncGuild(guildid, guildname=None, ownerid=None, ownertag=None):
-    date = datetime.datetime.now()
-    try:
-        guilds.create(GuildID=guildid, GuildName=guildname, OwnerID=ownerid, OwnerTag=ownertag,
-                      HasActiveSync=True, Time=date)
-    except IntegrityError as e:
-        logger.logDebug("DB Notice: Guild Already Added To Sync List! - " + str(
-            e) + ".", "WARNING")
-
-
-# Toggle active sync from a ban-sync guild
-def toggleActiveSync(guildid):
-    if isBanSyncGuild(guildid):
-        query = guilds.update(HasActiveSync=False).where(guilds.GuildID.contains(str(guildid)))
-        query.execute()
-    else:
-        query = guilds.update(HasActiveSync=True).where(guilds.GuildID.contains(str(guildid)))
-        query.execute()
-
-
-# Get list of guilds to ban-sync to
-def getBanSyncGuilds():
-    query = guilds.select().where(guilds.HasActiveSync == True)
-    if query.exists():
-        return query
-    return []
-
-
-# Is the guild on the list of guilds to ban-sync to?
-def isBanSyncGuild(guildid):
-    query = guilds.select().where((guilds.GuildID.contains(str(guildid))) & (guilds.HasActiveSync == True))
-    if query.exists():
-        return True
-    return False
-
-
-# Is the guild in the db?
-def isGuildInDB(guildid):
-    query = guilds.select().where(guilds.GuildID.contains(str(guildid)))
-    if query.exists():
-        return True
-    return False
-
-
 # -------------------------------------------------- SETUP OF TABLES ------------------------------------------------- #
 
 
 def create_tables():
     with db:
-        db.create_tables([moderators, bans, banappeals, guilds])
+        db.create_tables([moderators, bans, banappeals])
 
 
 create_tables()

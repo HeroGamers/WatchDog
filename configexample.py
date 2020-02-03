@@ -7,7 +7,6 @@ os.environ["banlistguild"] = "GUILD ID FOR GUILD TO SYNC BANS FROM/TO"
 os.environ["appealguild"] = "GUILD ID FOR GUILD WHERE BAN APPEALS ARE MADE"
 
 os.environ["debugEnabled"] = "True OR False"
-os.environ["testModeEnabled"] = "True OR False"
 
 os.environ["botlogfail"] = "CHANNEL ID FOR LOGS WHEN A COMMAND FAILS"
 os.environ["prvbanlist"] = "CHANNEL ID TO SHOW PRIVATE INFO ABOUT BANS IN"

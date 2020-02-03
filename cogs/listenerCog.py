@@ -1,7 +1,5 @@
 import datetime
-
-import discord, asyncio
-from discord import File
+import discord
 from discord.ext import commands
 import database
 from Util import logger
@@ -180,10 +178,6 @@ class listenerCog(commands.Cog):
                 moderator = bot.get_user(int(ban.Moderator))
             color = discord.Color.blurple()
 
-            # Fetch new reason
-            # if payload.emoji.name == "arrows_counterclockwise":
-            #     logger.logDebug("Getting new ban appeal reason only", "DEBUG")
-
             # Approve
             if payload.emoji.name == "✅":
                 # Basic approval stuff
@@ -276,7 +270,7 @@ class listenerCog(commands.Cog):
                         "INFO")
 
             # Update the embed
-            embed = createEmbed(status, color, reason, appealUser, appeal, ban, moderator)
+            embed = createEmbed(status + " by " + user.name + "#" + user.discriminator, color, reason, appealUser, appeal, ban, moderator)
             await message.edit(embed=embed)
 
     @commands.Cog.listener()
