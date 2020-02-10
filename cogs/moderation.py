@@ -212,7 +212,7 @@ class Moderation(commands.Cog):
                     embed=Embed(color=discord.Color.red(), description="You are not a Global Moderator! Shame!"))
 
         @bot.command(name="ban")
-        async def _ban(ctx, arg1, *args, reason="WatchDog - Global Ban"):
+        async def _ban(ctx, arg1, *args):
             """Bans a user globally."""
             if isModerator(ctx.author.id):
                 try:
@@ -224,11 +224,11 @@ class Moderation(commands.Cog):
                     return
 
                 # Get the ban reason, if there is any
-                banreason = None
+                reason = None
                 if len(args) > 1:
                     logger.logDebug("More than 1 argument given on ban command, getting banreason")
-                    banreason = ' '.join(args)
-                    logger.logDebug("Banreason: " + banreason)
+                    reason = ' '.join(args)
+                    logger.logDebug("Banreason: " + reason)
 
                 # Sends main embed
                 embed = discord.Embed(title="Account is being banned...", color=discord.Color.green(),
