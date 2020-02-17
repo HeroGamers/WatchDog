@@ -61,7 +61,7 @@ class Moderation(commands.Cog):
             if unban:
                 database.invalidateBan(user.id)
             else:
-                database.newBan(userid=user.id, discordtag=user.name + user.discriminator, moderator=ctx.author.id,
+                database.newBan(userid=user.id, discordtag=user.name + "#" + user.discriminator, moderator=ctx.author.id,
                                 reason=reason, guild=ctx.guild.id, avatarurl=user.avatar_url)
 
         # Function to ban
