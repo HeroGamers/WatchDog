@@ -5,6 +5,8 @@ import database
 from Util import logger
 import os
 
+from cogs import moderation
+
 
 def createEmbed(status, color, reason, appealUser, appeal, ban, moderator=None):
     if ban.Reason is None:
@@ -66,18 +68,98 @@ class listenerCog(commands.Cog):
     @commands.Cog.listener()
     async def on_member_join(self, member):
         bot = self.bot
-        guild = member.guild
-        if guild.id == int(os.getenv('appealguild')):
+        joinguild = member.guild
+        user = await bot.fetch_user(member.id)
+
+        # If guild is appealguild
+        if joinguild.id == int(os.getenv('appealguild')):
             await logger.log("User joined the appeal guild! UserID: " + str(member.id), bot, "DEBUG")
-            return
-        if database.isBanned(member.id):
+        # If user is globally banned in the database, ban
+        elif database.isBanned(member.id):
             await logger.log("Banned User tried joining a guild! UserID: " + str(member.id), bot, "INFO")
             try:
-                user = await bot.fetch_user(member.id)
-                await guild.ban(user, reason="WatchDog - Global Ban")
+                await joinguild.ban(user, reason="WatchDog - Global Ban")
             except Exception as e:
                 await logger.log("Could not ban the user `%s` (%s) in the guild `%s` (%s) - %s" % (
-                    user.name, user.id, guild.name, guild.id, e), bot, "INFO")
+                    user.name, user.id, joinguild.name, joinguild.id, e), bot, "INFO")
+        else:
+            # Ban users whose accounts are newer than x minutes
+            minutes = 10
+            user_creationdate = discord.utils.snowflake_time(member.id)
+            timediff = (datetime.datetime.utcnow() - user_creationdate).total_seconds() / 60
+
+            if timediff <= minutes:
+                # Send the user a message regarind their ban
+                dm_channel = user.dm_channel
+                if dm_channel is None:
+                    await user.create_dm()
+                    dm_channel = user.dm_channel
+
+                # Send message
+                try:
+                    await dm_channel.send(
+                        "Hello! I am WatchDog - a bot protecting the server, that you were just trying to join, from "
+                        "baddies!\n\nYour account is very new, which is one of the key characteristics of userbots, "
+                        "whose purposes include raiding and DM advertising. As such, you've been globally banned from "
+                        "every server that is protected by WatchDog. If you think that this is an error, "
+                        "and would like to appeal your ban, follow this link, and write us an appeal! We are sorry "
+                        "for any inconvenience this may have caused you!\nhttps://discord.gg/J9YVWgF")
+                except Exception as e:
+                    # if we can't send the DM, the user probably has DM's off, at which point we would uhhh, yeah.
+                    # back to this later
+                    await logger.log(
+                        "Couldn't send DM to banned user. User ID: " + str(user.id) + " - Error: " + str(e), bot,
+                        "INFO")
+
+                # Ban on current guild
+                try:
+                    await joinguild.ban(member, reason="WatchDog - Global Ban")
+                except:
+                    await logger.log("Could not ban the user `%s` (%s) in the guild `%s` (%s)" % (
+                        member.name, member.id, joinguild.name, joinguild.id), bot, "INFO")
+
+                # Ban on other guilds
+                guilds = [guild for guild in bot.guilds if guild.get_member(member.id)]
+                guilds.append(bot.get_guild(int(os.getenv('banlistguild'))))
+                for guild in guilds:
+                    try:
+                        await guild.ban(member, reason="WatchDog - Global Ban")
+                    except:
+                        await logger.log("Could not ban the user `%s` (%s) in the guild `%s` (%s)" % (
+                            member.name, member.id, guild.name, guild.id), bot, "INFO")
+
+                # Send private ban notif in private moderator ban list as well as message in botlog
+                # Sends a message in the botlog
+                color = discord.Color.red()
+                text = "banned"
+
+                await logger.logEmbed(color,
+                                      "WatchDog %s `%s` - (%s)" % (
+                                      text, member.name, member.id),
+                                      bot)
+                # Send private ban notif in private moderator ban list
+                prvchannel = bot.get_channel(int(os.getenv('prvbanlist')))
+                prvembed = discord.Embed(title="Account " + text, color=color,
+                                         description="`%s` has been globally %s" % (member.id, text))
+                prvembed.add_field(name="Moderator", value="WatchDog",
+                                   inline=True)
+                prvembed.add_field(name="Name when " + text, value="%s" % member, inline=True)
+                prvembed.add_field(name="In server", value="%s (`%s`)" % (joinguild.name, joinguild.id),
+                                   inline=True)
+                prvembed.add_field(name="In channel", value="None",
+                                   inline=True)
+                prvembed.add_field(name="Reason", value="New Account (%s minutes)" % timediff,
+                                   inline=True)
+                prvembed.set_footer(text="%s has been globally %s" % (member, text),
+                                    icon_url="https://cdn.discordapp.com/attachments/456229881064325131/489102109363666954/366902409508814848.png")
+                prvembed.set_thumbnail(url=member.avatar_url)
+                await prvchannel.send(embed=prvembed)
+                # Update the database
+                database.newBan(userid=member.id, discordtag=member.name + "#" + member.discriminator,
+                                moderator=bot.user.id, reason="New Account (%s minutes)" % timediff, guild=joinguild.id,
+                                avatarurl=member.avatar_url)
+
+
 
     @commands.Cog.listener()
     async def on_raw_reaction_add(self, payload):
@@ -324,10 +406,17 @@ class listenerCog(commands.Cog):
                 await appealMessage.add_reaction("❎")
 
                 # Let the user know that we've updated their appeal
-                await message.channel.send("Thanks for your interest in appealing your WatchDog Ban!\n\nYour appeal "
-                                           "reason has been updated, and our moderators will look into it! If you "
-                                           "wish to update your appeal reason, then just write a new appeal reason in "
-                                           "this DM!")
+                try:
+                    await message.channel.send("Thanks for your interest in appealing your WatchDog Ban!\n\nYour "
+                                               "appeal reason has been updated, and our moderators will look into it! "
+                                               "If you wish to update your appeal reason, then just write a new "
+                                               "appeal reason in this DM!")
+                except Exception as e:
+                    # if we can't send the DM, the user probably has DM's off, at which point we would uhhh, yeah.
+                    # back to this later
+                    await logger.log(
+                        "Couldn't send DM to banned user. User ID: " + str(user.id) + " - Error: " + str(e), bot,
+                        "INFO")
             else:
                 logger.logDebug("User is not appealing")
 
