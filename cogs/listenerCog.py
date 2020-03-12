@@ -134,7 +134,7 @@ class listenerCog(commands.Cog):
                 text = "banned"
 
                 await logger.logEmbed(color,
-                                      "WatchDog %s `%s` - (%s)" % (
+                                      "`WatchDog` %s `%s` - (%s)" % (
                                       text, member.name, member.id),
                                       bot)
                 # Send private ban notif in private moderator ban list
