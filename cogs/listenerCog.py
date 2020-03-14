@@ -83,6 +83,8 @@ class listenerCog(commands.Cog):
                 await logger.log("Could not ban the user `%s` (%s) in the guild `%s` (%s) - %s" % (
                     user.name, user.id, joinguild.name, joinguild.id, e), bot, "INFO")
         else:
+            if user.bot:
+                return
             # Ban users whose accounts are newer than x minutes
             minutes = 10
             user_creationdate = discord.utils.snowflake_time(member.id)
