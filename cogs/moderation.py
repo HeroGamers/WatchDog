@@ -75,11 +75,14 @@ class Moderation(commands.Cog):
             usersToBan = []
             for user in users:
                 if user == ctx.bot.user:
-                    error = await logger.log("Banning an user failed - given user was the bot", bot, "INFO")
+                    error = "Banning an user failed - given user was the bot"
+                    await logger.log(error, bot, "INFO")
                 elif isModerator(user.id):
-                    error = await logger.log("Banning an user failed - given user was a Global Moderator", bot, "INFO")
+                    error = "Banning an user failed - given user was a Global Moderator"
+                    await logger.log(error, bot, "INFO")
                 elif database.isBanned(user.id):
-                    error = await logger.log("Banning an user failed - given user was already banned", bot, "INFO")
+                    error = "Banning an user failed - given user was already banned"
+                    await logger.log(error, bot, "INFO")
                 else:
                     usersToBan.append(user)
 
