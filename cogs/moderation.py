@@ -249,13 +249,15 @@ class Moderation(commands.Cog):
                 if error is None:
                     embed = discord.Embed(title="Account banned", color=discord.Color.green(),
                                           description="`%s` has been globally banned 👌" % user)
+                    embed.set_image(
+                        url="https://cdn.discordapp.com/attachments/456229881064325131/475498849696219141/ban.gif")
                 else:
                     embed = discord.Embed(title="Banning failed", color=discord.Color.red(),
                                           description="Error: %s" % error)
+                    embed.set_image(
+                        url="https://cdn.discordapp.com/attachments/474313313598046238/689828429318848517/failed.gif")
                 embed.set_footer(text="%s - Global WatchDog Moderator" % ctx.author.name,
                                  icon_url=ctx.author.avatar_url)
-                embed.set_image(
-                    url="https://cdn.discordapp.com/attachments/456229881064325131/475498849696219141/ban.gif")
                 await embed_message.edit(embed=embed)
             else:
                 await ctx.send(
@@ -336,13 +338,15 @@ class Moderation(commands.Cog):
                 if error is None:
                     embed = discord.Embed(title="Accounts banned", color=discord.Color.green(),
                                           description="All the accounts have been globally banned 👌")
+                    embed.set_image(
+                        url="https://cdn.discordapp.com/attachments/456229881064325131/475498849696219141/ban.gif")
                 else:
                     embed = discord.Embed(title="Banning failed", color=discord.Color.red(),
                                           description="Error: %s" % error)
+                    embed.set_image(
+                        url="https://cdn.discordapp.com/attachments/474313313598046238/689828429318848517/failed.gif")
                 embed.set_footer(text="%s - Global WatchDog Moderator" % ctx.author.name,
                                  icon_url=ctx.author.avatar_url)
-                embed.set_image(
-                    url="https://cdn.discordapp.com/attachments/456229881064325131/475498849696219141/ban.gif")
                 await embed_message.edit(embed=embed)
             else:
                 await ctx.send(
