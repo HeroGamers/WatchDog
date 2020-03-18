@@ -75,13 +75,17 @@ class Moderation(commands.Cog):
             usersToBan = []
             for user in users:
                 if user == ctx.bot.user:
-                    await logger.log("Banning an user failed - given user was the bot", bot, "INFO")
+                    error = await logger.log("Banning an user failed - given user was the bot", bot, "INFO")
                 elif isModerator(user.id):
-                    await logger.log("Banning an user failed - given user was a Global Moderator", bot, "INFO")
+                    error = await logger.log("Banning an user failed - given user was a Global Moderator", bot, "INFO")
                 elif database.isBanned(user.id):
-                    await logger.log("Banning an user failed - given user was already banned", bot, "INFO")
+                    error = await logger.log("Banning an user failed - given user was already banned", bot, "INFO")
                 else:
                     usersToBan.append(user)
+
+            # If the list is empty, then there are no users to ban. As such, let's return the most recent error, I guess
+            if not usersToBan:
+                return error
 
             # Ban on current guild
             for user in usersToBan:
@@ -238,12 +242,16 @@ class Moderation(commands.Cog):
                 embed_message = await ctx.send(embed=embed)
 
                 # Perform the ban
-                await performBan(ctx, user, reason)
+                error = await performBan(ctx, user, reason)
 
                 # Do this when done
                 # send final embed, telling the ban was sucessful
-                embed = discord.Embed(title="Account banned", color=discord.Color.green(),
-                                      description="`%s` has been globally banned 👌" % user)
+                if error is None:
+                    embed = discord.Embed(title="Account banned", color=discord.Color.green(),
+                                          description="`%s` has been globally banned 👌" % user)
+                else:
+                    embed = discord.Embed(title="Banning failed", color=discord.Color.red(),
+                                          description="Error: %s" % error)
                 embed.set_footer(text="%s - Global WatchDog Moderator" % ctx.author.name,
                                  icon_url=ctx.author.avatar_url)
                 embed.set_image(
@@ -321,12 +329,16 @@ class Moderation(commands.Cog):
                 embed_message = await ctx.send(embed=embed)
 
                 # Perform the bans
-                await performBan(ctx, users, reason)
+                error = await performBan(ctx, users, reason)
 
                 # Do this when done
                 # send final embed, telling the ban was sucessful
-                embed = discord.Embed(title="Accounts banned", color=discord.Color.green(),
-                                      description="All the accounts have been globally banned 👌")
+                if error is None:
+                    embed = discord.Embed(title="Accounts banned", color=discord.Color.green(),
+                                          description="All the accounts have been globally banned 👌")
+                else:
+                    embed = discord.Embed(title="Banning failed", color=discord.Color.red(),
+                                          description="Error: %s" % error)
                 embed.set_footer(text="%s - Global WatchDog Moderator" % ctx.author.name,
                                  icon_url=ctx.author.avatar_url)
                 embed.set_image(
