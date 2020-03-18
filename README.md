@@ -38,7 +38,7 @@ I would be very happy if you could give some feedback on the bot, after you have
 4.  Fill out the config
 5.  Run bot.py, and enjoy
 
-----
+___
 <div align="center">
 
 [![Treeland Discord Server](https://discordapp.com/api/guilds/221996778092888065/widget.png?style=banner3)](https://discord.gg/PvFPEfd)

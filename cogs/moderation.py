@@ -75,13 +75,13 @@ class Moderation(commands.Cog):
             usersToBan = []
             for user in users:
                 if user == ctx.bot.user:
-                    error = "Banning an user failed - given user was the bot"
+                    error = "Banning a user failed - given user is the bot"
                     await logger.log(error, bot, "INFO")
                 elif isModerator(user.id):
-                    error = "Banning an user failed - given user was a Global Moderator"
+                    error = "Banning a user failed - given user is a Global Moderator"
                     await logger.log(error, bot, "INFO")
                 elif database.isBanned(user.id):
-                    error = "Banning an user failed - given user was already banned"
+                    error = "Banning a user failed - given user is already banned"
                     await logger.log(error, bot, "INFO")
                 else:
                     usersToBan.append(user)
@@ -95,9 +95,10 @@ class Moderation(commands.Cog):
                 # Bans on current guild first
                 try:
                     await ctx.guild.ban(user, reason="WatchDog - Global Ban")
-                except:
+                except Exception as e:
                     await logger.log("Could not ban the user `%s` (%s) in the guild `%s` (%s)" % (
                         user.name, user.id, ctx.guild.name, ctx.guild.id), bot, "INFO")
+                    logger.logDebug(e)
 
             # Ban on other guilds
             guilds = [guild for guild in bot.guilds if guild.get_member(user.id)]
@@ -106,9 +107,10 @@ class Moderation(commands.Cog):
                 for guild in guilds:
                     try:
                         await guild.ban(user, reason="WatchDog - Global Ban")
-                    except:
+                    except Exception as e:
                         await logger.log("Could not ban the user `%s` (%s) in the guild `%s` (%s)" % (
                             user.name, user.id, guild.name, guild.id), bot, "INFO")
+                        logger.logDebug(e)
                 # Send private ban notif in private moderator ban list as well as message in botlog
                 await logBan(ctx, user, reason=reason)
 
@@ -294,9 +296,10 @@ class Moderation(commands.Cog):
                             continue
                         try:
                             await guild.unban(user, reason="WatchDog - Global Unban")
-                        except:
+                        except Exception as e:
                             await logger.log("Could not unban the user `%s` (%s) in the guild `%s` (%s)" % (
                                 user.name, user.id, guild.name, guild.id), bot, "DEBUG")
+                            logger.logdebug(e)
                     # do this when done
                     # Send private ban notif in private moderator ban list as well as message in botlog
                     await logBan(ctx, user, unban=True)

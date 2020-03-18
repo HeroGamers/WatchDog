@@ -5,16 +5,20 @@ from Util import logger
 import os
 import database
 
+# Import the config
 try:
     import config
 except ImportError:
-    print("Couldn't import config.py")
+    print("Couldn't import config.py! Exiting!")
+    exit()
+
+# Import a monkey patch, if that exists
 try:
     import monkeyPatch
 except ImportError:
     print("DEBUG: No Monkey patch found!")
 
-bot = commands.Bot(command_prefix=os.getenv('prefix'), description='Well boys, we did it. Baddies is no more.')
+bot = commands.Bot(command_prefix=os.getenv('prefix'), description='Well boys, we did it. Baddies are no more.')
 
 startup_extensions = ["essentials",
                       "moderation",

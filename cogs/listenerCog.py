@@ -5,8 +5,6 @@ import database
 from Util import logger
 import os
 
-from cogs import moderation
-
 
 def createEmbed(status, color, reason, appealUser, appeal, ban, moderator=None):
     if ban.Reason is None:
@@ -56,9 +54,10 @@ class listenerCog(commands.Cog):
             if os.getenv('testModeEnabled') != "True":
                 try:
                     await guild.unban(user, reason="WatchDog - Global Unban")
-                except:
+                except Exception as e:
                     await logger.log("Could not unban the user `%s` (%s) in the guild `%s` (%s)" % (
                         user.name, user.id, guild.name, guild.id), bot, "INFO")
+                    logger.logDebug(e)
             else:
                 logger.logDebug("TestUnBanned (unban) " + user.name + " (" + str(
                     user.id) + "), in the guild " + guild.name + "(" + str(guild.id) + ")", "DEBUG")
@@ -116,9 +115,10 @@ class listenerCog(commands.Cog):
                 # Ban on current guild
                 try:
                     await joinguild.ban(member, reason="WatchDog - Global Ban")
-                except:
+                except Exception as e:
                     await logger.log("Could not ban the user `%s` (%s) in the guild `%s` (%s)" % (
                         member.name, member.id, joinguild.name, joinguild.id), bot, "INFO")
+                    logger.logDebug(e)
 
                 # Ban on other guilds
                 guilds = [guild for guild in bot.guilds if guild.get_member(member.id)]
@@ -126,9 +126,10 @@ class listenerCog(commands.Cog):
                 for guild in guilds:
                     try:
                         await guild.ban(member, reason="WatchDog - Global Ban")
-                    except:
+                    except Exception as e:
                         await logger.log("Could not ban the user `%s` (%s) in the guild `%s` (%s)" % (
                             member.name, member.id, guild.name, guild.id), bot, "INFO")
+                        logger.logDebug(e)
 
                 # Send private ban notif in private moderator ban list as well as message in botlog
                 # Sends a message in the botlog
