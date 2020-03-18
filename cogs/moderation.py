@@ -246,7 +246,7 @@ class Moderation(commands.Cog):
 
                 # Do this when done
                 # send final embed, telling the ban was sucessful
-                if error is None:
+                if not error:
                     embed = discord.Embed(title="Account banned", color=discord.Color.green(),
                                           description="`%s` has been globally banned 👌" % user)
                     embed.set_image(
@@ -335,7 +335,7 @@ class Moderation(commands.Cog):
 
                 # Do this when done
                 # send final embed, telling the ban was sucessful
-                if error is None:
+                if not error:
                     embed = discord.Embed(title="Accounts banned", color=discord.Color.green(),
                                           description="All the accounts have been globally banned 👌")
                     embed.set_image(
