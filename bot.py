@@ -32,7 +32,9 @@ async def updateDatabase():
     banguild = bot.get_guild(int(os.getenv('banlistguild')))
     ban_list = await banguild.bans()
     for BanEntry in ban_list:
-        if not database.isBanned(BanEntry.user.id):
+        if BanEntry.reason is not None & "not global" in BanEntry.reason.lower():
+            continue
+        elif not database.isBanned(BanEntry.user.id):
             database.newBan(userid=BanEntry.user.id, discordtag=BanEntry.user.name + "#" + BanEntry.user.discriminator,
                             avatarurl=BanEntry.user.avatar_url)
 
@@ -65,11 +67,10 @@ async def checkAppealGuild():
         # Sending the message
         await logger.log("Sending the appeal channel message", bot, "INFO")
         message = await appealchannel.send(content="Hello there! Welcome to the WatchDog Appeal Server!\n" +
-                                             "\nTo begin your appeal process, please click this reaction!")
+                                                   "\nTo begin your appeal process, please click this reaction!")
 
         # now we add a reaction to the message
         await message.add_reaction("✅")
-
 
 
 @bot.event
@@ -80,7 +81,6 @@ async def on_ready():
     logger.logDebug("     UserID:   " + str(bot.user.id), "INFO")
     logger.logDebug("--------------------------------------", "INFO")
     print("\n")
-
 
     logger.logDebug("Updating the database!", "INFO")
     await updateDatabase()
