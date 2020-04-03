@@ -299,7 +299,7 @@ class Moderation(commands.Cog):
                         except Exception as e:
                             await logger.log("Could not unban the user `%s` (%s) in the guild `%s` (%s)" % (
                                 user.name, user.id, guild.name, guild.id), bot, "DEBUG")
-                            logger.logdebug(e)
+                            logger.logDebug(e)
                     # do this when done
                     # Send private ban notif in private moderator ban list as well as message in botlog
                     await logBan(ctx, user, unban=True)
