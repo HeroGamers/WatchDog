@@ -199,12 +199,70 @@ def updateBanAppealStatus(userid, boolean, moderator):
     query.execute()
 
 
+# ------------------------------------------------------ GUILDS ------------------------------------------------------ #
+
+
+# Table for the servers where new accounts gets globally banned
+class guilds(Model):
+    GuildID = CharField(unique=True, max_length=snowflake_max_length)
+    GuildName = CharField(null=True, max_length=guildname_max_length)
+    OwnerID = CharField(null=True, max_length=snowflake_max_length)
+    OwnerTag = CharField(null=True, max_length=discordtag_max_length)
+    HasNewAccountBan = BooleanField()
+
+    class Meta:
+        database = db
+
+
+# Add a guild
+def addNewGuild(guildid, guildname=None, ownerid=None, ownertag=None):
+    try:
+        guilds.create(GuildID=guildid, GuildName=guildname, OwnerID=ownerid, OwnerTag=ownertag,
+                      HasNewAccountBan=True)
+    except IntegrityError as e:
+        logger.logDebug("DB Notice: Guild Already Added To Sync List! - " + str(
+            e) + ".", "WARNING")
+
+
+# Toggle active sync from a ban-sync guild
+def toggleNewAccountBan(guildid):
+    if isNewAccountBanGuild(guildid):
+        query = guilds.update(HasNewAccountBan=False).where(guilds.GuildID.contains(str(guildid)))
+    else:
+        query = guilds.update(HasNewAccountBan=True).where(guilds.GuildID.contains(str(guildid)))
+    query.execute()
+
+
+# Get list of guilds to ban-sync to
+def getNewAccountBanGuilds():
+    query = guilds.select().where(guilds.HasNewAccountBan == True)
+    if query.exists():
+        return query
+    return []
+
+
+# Is the guild on the list of guilds to ban-sync to?
+def isNewAccountBanGuild(guildid):
+    query = guilds.select().where((guilds.GuildID.contains(str(guildid))) & (guilds.HasNewAccountBan == True))
+    if query.exists():
+        return True
+    return False
+
+
+# Is the guild in the db?
+def isGuildInDB(guildid):
+    query = guilds.select().where(guilds.GuildID.contains(str(guildid)))
+    if query.exists():
+        return True
+    return False
+
+
 # -------------------------------------------------- SETUP OF TABLES ------------------------------------------------- #
 
 
 def create_tables():
     with db:
-        db.create_tables([moderators, bans, banappeals])
+        db.create_tables([moderators, bans, banappeals, guilds])
 
 
 create_tables()

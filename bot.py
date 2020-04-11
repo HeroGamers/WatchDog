@@ -32,9 +32,11 @@ async def updateDatabase():
     banguild = bot.get_guild(int(os.getenv('banlistguild')))
     ban_list = await banguild.bans()
     for BanEntry in ban_list:
-        if BanEntry.reason is not None & "not global" in BanEntry.reason.lower():
-            continue
-        elif not database.isBanned(BanEntry.user.id):
+        if BanEntry.reason is not None:
+            if "not global" in BanEntry.reason.lower():
+                continue
+
+        if not database.isBanned(BanEntry.user.id):
             database.newBan(userid=BanEntry.user.id, discordtag=BanEntry.user.name + "#" + BanEntry.user.discriminator,
                             avatarurl=BanEntry.user.avatar_url)
 
