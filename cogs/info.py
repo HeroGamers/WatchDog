@@ -39,15 +39,14 @@ class Info(commands.Cog):
     @commands.command(name="botinfo", aliases=["bot"])
     async def _botinfo(self, ctx):
         """Retrives information about the bot - GM only."""
-        bot = self.bot
         if isModerator(ctx.author.id):
             embed = discord.Embed(title="Bot Information", color=discord.Color.green(),
                                   description="")
             embed.add_field(name="Creation Date",
                             value="%s" % discord.utils.snowflake_time(ctx.bot.user.id).strftime(
                                 "%Y-%m-%d %H:%M:%S"), inline=True)
-            embed.add_field(name="Guilds", value="%s" % len(bot.guilds), inline=True)
-            ban_list_guild = bot.get_guild(int(os.getenv('banlistguild')))
+            embed.add_field(name="Guilds", value="%s" % len(self.bot.guilds), inline=True)
+            ban_list_guild = self.bot.get_guild(int(os.getenv('banlistguild')))
             ban_list = await ctx.guild.bans()
             embed.add_field(name="Global Bans", value="%s" % len(ban_list), inline=True)
             embed.add_field(name="Central Server", value=ban_list_guild.name,
@@ -62,7 +61,6 @@ class Info(commands.Cog):
     @commands.command(name="userinfo", aliases=["whois", "lookup", "info"])
     async def _userinfo(self, ctx, arg1):
         """Gets info about a user."""
-        bot = self.bot
         try:
             user = await ctx.bot.fetch_user(arg1)
         except Exception as e:
@@ -103,7 +101,7 @@ class Info(commands.Cog):
 
             inguildwithbot = "No"
             member = None
-            for guild in bot.guilds:
+            for guild in self.bot.guilds:
                 if inguildwithbot == "Yes":
                     break
                 member = guild.get_member(user.id)

@@ -29,8 +29,9 @@ class Moderation(commands.Cog, name="Moderation"):
         return False
 
     # Function to send message about the ban
-    async def logBan(self, ctx, user, unban=False, reason=None):
-        bot = self.bot
+    @classmethod
+    async def logBan(cls, ctx, user, unban=False, reason=None):
+        bot = ctx.bot
         # Sends a message in the botlog
         if unban:
             color = discord.Color.green()
@@ -68,8 +69,8 @@ class Moderation(commands.Cog, name="Moderation"):
 
     # Function to ban
     @classmethod
-    async def performBan(self, ctx, users, reason):
-        bot = self.bot
+    async def performBan(cls, ctx, users, reason):
+        bot = ctx.bot
         if isinstance(users, tuple):
             users = list(users)
         elif not isinstance(users, list):
@@ -117,11 +118,11 @@ class Moderation(commands.Cog, name="Moderation"):
                         user.name, user.id, guild.name, guild.id), bot, "INFO")
                     logger.logDebug(e)
             # Send private ban notif in private moderator ban list as well as message in botlog
-            await self.logBan(ctx, user, reason=reason)
+            await cls.logBan(ctx, user, reason=reason)
 
     # Function used to try and get users from arguments
     @classmethod
-    async def getUser(self, ctx, arg):
+    async def getUser(cls, ctx, arg):
         if arg.startswith("<@") and arg.endswith(">"):
             userid = arg.replace("<@", "").replace(">", "").replace("!", "")  # fuck you nicknames
         else:
@@ -144,7 +145,7 @@ class Moderation(commands.Cog, name="Moderation"):
 
     # Funtion to try and get a reason from multiple arguments
     @classmethod
-    async def sortArgs(self, ctx, args):
+    async def sortArgs(cls, ctx, args):
         userlist = []
         reasonlist = []
         logger.logDebug("Userlist: " + str(userlist))
@@ -154,7 +155,7 @@ class Moderation(commands.Cog, name="Moderation"):
         user_max = 0
         for arg in args:
             try:
-                founduser = await self.getUser(ctx, arg)
+                founduser = await cls.getUser(ctx, arg)
                 logger.logDebug("User found: " + str(founduser))
                 userlist.append(founduser)
 
@@ -184,7 +185,6 @@ class Moderation(commands.Cog, name="Moderation"):
     @commands.bot_has_permissions(ban_members=True)
     async def _revsync(self, ctx):
         """Sync bans from server to central, and other guilds - GM only."""
-        bot = self.bot
         ban_list = await ctx.guild.bans()
         if isModerator(ctx.author.id):
             if not await self.confirmAction(ctx, "revsync"):
@@ -232,7 +232,7 @@ class Moderation(commands.Cog, name="Moderation"):
     @commands.command(name="ban")
     async def _ban(self, ctx, arg1, *args):
         """Bans a user globally - GM only."""
-        bot = self.bot
+        bot = ctx.bot
         if isModerator(ctx.author.id):
             try:
                 user = await self.getUser(ctx, arg1)
@@ -281,7 +281,7 @@ class Moderation(commands.Cog, name="Moderation"):
     @commands.command(name="unban")
     async def _unban(self, ctx, arg1):
         """Unbans a user globally - GM only."""
-        bot = self.bot
+        bot = ctx.bot
         if isModerator(ctx.author.id):
             try:
                 user = await self.getUser(ctx, arg1)
@@ -308,7 +308,7 @@ class Moderation(commands.Cog, name="Moderation"):
                     try:
                         await guild.unban(user, reason="WatchDog - Global Unban")
                     except Exception as e:
-                        await logger.logDebug("Could not unban the user `%s` (%s) in the guild `%s` (%s)" % (
+                        logger.logDebug("Could not unban the user `%s` (%s) in the guild `%s` (%s)" % (
                             user.name, user.id, guild.name, guild.id), "DEBUG")
                         logger.logDebug(e)
                 # do this when done
