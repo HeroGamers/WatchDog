@@ -77,8 +77,7 @@ async def checkAppealGuild():
 
 
 @bot.event
-async def on_ready():
-    # Bot startup is now done...
+async def on_connect():
     logger.logDebug("----------[LOGIN SUCESSFULL]----------", "INFO")
     logger.logDebug("     Username: " + bot.user.name, "INFO")
     logger.logDebug("     UserID:   " + str(bot.user.id), "INFO")
@@ -94,7 +93,12 @@ async def on_ready():
     await checkAppealGuild()
 
     # Bot done starting up
-    await logger.log("Bot is ready!", bot, "INFO", "Bot startup done.\n")
+    await logger.log("Bot startup done!", bot, "INFO", "Bot startup done.\n")
+
+@bot.event
+async def on_ready():
+    # Bot startup is now done...
+    logger.logDebug("WatchDog has (re)connected to Discord!")
 
 
 @bot.event
