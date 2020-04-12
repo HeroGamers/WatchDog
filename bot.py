@@ -18,7 +18,8 @@ try:
 except ImportError:
     print("DEBUG: No Monkey patch found!")
 
-bot = commands.Bot(command_prefix=os.getenv('prefix'), description='Well boys, we did it. Baddies are no more.')
+bot = commands.Bot(command_prefix=os.getenv('prefix'), description='Well boys, we did it. Baddies are no more.',
+                   activity=discord.Game(name="with the banhammer"))
 
 startup_extensions = ["essentials",
                       "moderation",
@@ -94,7 +95,6 @@ async def on_ready():
 
     # Bot done starting up
     await logger.log("Bot is ready!", bot, "INFO", "Bot startup done.\n")
-    await bot.change_presence(activity=discord.Game(name="with the banhammer"))
 
 
 @bot.event
