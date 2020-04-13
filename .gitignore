@@ -9,6 +9,7 @@ WatchDog-Database.db-journal
 .idea/
 monkeyPatch.py
 config-alt.py
+docs/.idea/
 
 # Editors
 **/.idea/workspace.xml
