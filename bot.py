@@ -24,7 +24,8 @@ bot = commands.Bot(command_prefix=os.getenv('prefix'), description='Well boys, w
 startup_extensions = ["essentials",
                       "moderation",
                       "info",
-                      "listenerCog"]
+                      "listenerCog",
+                      "botlists"]
 
 
 # Function to update the database on startup

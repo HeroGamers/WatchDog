@@ -11,3 +11,8 @@ os.environ["debugEnabled"] = "True OR False"
 os.environ["botlogfail"] = "CHANNEL ID FOR LOGS WHEN A COMMAND FAILS"
 os.environ["prvbanlist"] = "CHANNEL ID TO SHOW PRIVATE INFO ABOUT BANS IN"
 os.environ["banappealschannel"] = "CHANNEL ID FOR BAN APPEALS"
+
+os.environ["top.gg_token"] = ""
+os.environ["discord.bots.gg_token"] = ""
+os.environ["discordbotlist.com_token"] = ""
+os.environ["bots.ondiscord.xyz_token"] = ""

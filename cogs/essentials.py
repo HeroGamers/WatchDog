@@ -32,7 +32,7 @@ class essentials(commands.Cog, name="Essentials"):
         """Lists all the cogs - GM only."""
         if isModerator(ctx.author.id):
             embed = discord.Embed(title="Cogs", color=discord.Color.green(),
-                                  description="`essentials, info, moderation`")
+                                  description="`essentials, info, moderation, listenerCog, botlists`")
             embed.set_footer(text=ctx.author.name, icon_url=ctx.author.avatar_url)
             await ctx.send(embed=embed)
         else:

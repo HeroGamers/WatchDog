@@ -162,8 +162,6 @@ class listenerCog(commands.Cog, name="Listener Cog"):
                                     moderator=self.bot.user.id, reason="New Account (%s minutes)" % timediff, guild=joinguild.id,
                                     avatarurl=member.avatar_url)
 
-
-
     @commands.Cog.listener()
     async def on_raw_reaction_add(self, payload):
         # logger.logDebug("New reaction! Payload emoji name: " + payload.emoji.name)
