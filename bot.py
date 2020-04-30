@@ -47,8 +47,11 @@ async def updateDatabase():
 async def checkAppealGuild():
     appealguild = bot.get_guild(int(os.getenv('appealguild')))
     appealchannel = None
+    
+    logger.logDebug(appealguild.channels)
     for channel in appealguild.channels:
         if channel.name == "appeal-here":
+            logger.logDebug("yes")
             appealchannel = channel
             break
     if appealchannel is None:
