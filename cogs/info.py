@@ -50,6 +50,7 @@ class Info(commands.Cog):
         embed.add_field(name="Global Bans", value="%s" % len(ban_list), inline=True)
         embed.add_field(name="Central Server", value=ban_list_guild.name,
                         inline=True)
+        embed.add_field(name="Privacy Policy", value="For the Privacy Policy, please send a DM to HeroGamers through the support server!", inline=True)
         embed.set_footer(text="%s" % ctx.author.name,
                          icon_url=ctx.author.avatar_url)
         await ctx.send(embed=embed)
