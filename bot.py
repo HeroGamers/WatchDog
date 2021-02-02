@@ -133,7 +133,8 @@ async def on_command_error(ctx: commands.Context, error):
 async def on_guild_join(guild):
     await logger.log("Joined a new guild (`%s` - `%s`)" % (guild.name, guild.id), bot, "INFO")
     # Check the bot's ban permission
-    if Permissions.ban_members in guild.get_member(bot.user.id).guild_permissions:
+    bot_member = await guild.fetch_member(bot.user.id)
+    if Permissions.ban_members in bot_member.guild_permissions:
         # Get bans from db
         bans = database.getBans()
         # make new list for userid in bans, if member is in guild
