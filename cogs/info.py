@@ -1,12 +1,11 @@
 import discord
-from discord import Embed
 from discord.ext import commands
 from Util import logger
 import os
-
 from database import isModerator
 from database import isBanned
 from database import getBan
+from database import getBans
 
 
 class Info(commands.Cog):
@@ -46,7 +45,7 @@ class Info(commands.Cog):
                             "%Y-%m-%d %H:%M:%S"), inline=True)
         embed.add_field(name="Guilds", value="%s" % len(self.bot.guilds), inline=True)
         ban_list_guild = self.bot.get_guild(int(os.getenv('banlistguild')))
-        ban_list = await ctx.guild.bans()
+        ban_list = getBans()
         embed.add_field(name="Global Bans", value="%s" % len(ban_list), inline=True)
         embed.add_field(name="Central Server", value=ban_list_guild.name,
                         inline=True)
