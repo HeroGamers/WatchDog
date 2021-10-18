@@ -1,5 +1,5 @@
 import os, sys
-from discord import Embed
+from discord import Embed, AllowedMentions
 import logging
 from logging.handlers import TimedRotatingFileHandler
 import datetime
@@ -39,7 +39,11 @@ async def log(message, bot, level="INFO", debug=""):
     else:
         levelemote = "🔎"
 
-    await channel.send("`[" + time + "]` **" + levelemote + " " + level + ":** " + message)
+    if level == "DEBUG":
+        await channel.send("`[" + time + "]` **" + levelemote + " " + level + ":** " + message,
+                           allowed_mentions=AllowedMentions(everyone=False, users=False, roles=False))
+    else:
+        await channel.send("`[" + time + "]` **" + levelemote + " " + level + ":** " + message)
     if debug == "":
         logDebug(message, level)
         return

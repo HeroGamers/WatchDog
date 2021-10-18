@@ -65,6 +65,9 @@ class listenerCog(commands.Cog, name="Listener Cog"):
 
     @commands.Cog.listener()
     async def on_member_join(self, member):
+        if member.bot:
+            return
+
         joinguild = member.guild
         user = await self.bot.fetch_user(member.id)
 
@@ -80,8 +83,6 @@ class listenerCog(commands.Cog, name="Listener Cog"):
                 await logger.log("Could not ban the user `%s` (%s) in the guild `%s` (%s) - %s" % (
                     user.name, user.id, joinguild.name, joinguild.id, e), self.bot, "INFO")
         else:
-            if user.bot:
-                return
             # Ban users whose accounts are newer than x minutes, if the current joined guild has new account ban enabled
             if database.isNewAccountBanGuild(joinguild.id):
                 minutes = 10

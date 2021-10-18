@@ -18,6 +18,11 @@ try:
 except ImportError:
     print("DEBUG: No Monkey patch found!")
 
+intents = discord.Intents.default()
+intents.typing = False
+intents.presences = False
+intents.members = True
+
 bot = commands.Bot(command_prefix=os.getenv('prefix'), description='Well boys, we did it. Baddies are no more.',
                    activity=discord.Game(name="with the banhammer"))
 
