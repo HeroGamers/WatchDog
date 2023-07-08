@@ -1,0 +1,36 @@
+version: "3.9"
+services:
+  watchdog:
+    hostname: watchdog
+    build: .
+    restart: always
+    stop_signal: SIGINT
+    environment:
+      - MARIADB_HOST=watchdog-database
+      - MARIADB_PORT=3306
+    env_file:
+      - database.env
+      - watchdog.env
+    networks:
+      - watchdog-network
+    depends_on:
+        - "watchdog-database"
+  watchdog-database:
+    hostname: watchdog-database
+    image: mariadb
+    restart: always
+    security_opt:
+      - seccomp:unconfined
+    env_file:
+      - database.env
+    volumes:
+      - db-data:/var/lib/mysql
+    ports:
+      - "127.0.0.1:3307:3306"
+    networks:
+      - watchdog-network
+volumes:
+  db-data:
+networks:
+  watchdog-network:
+    name: watchdog-network

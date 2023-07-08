@@ -5,13 +5,6 @@ from Util import logger
 import os
 import database
 
-# Import the config
-try:
-    import config
-except ImportError:
-    print("Couldn't import config.py! Exiting!")
-    exit()
-
 # Import a monkey patch, if that exists
 try:
     import monkeyPatch
